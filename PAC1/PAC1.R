@@ -3,8 +3,7 @@ if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 # https://cran.r-project.org/web/packages/dplyr/index.html
 if (!require('dplyr')) install.packages('dplyr'); library('dplyr')
 
-#titanic <- read.csv("C:/Users/xavim/Rprojects/MD-PAC1/titanic.csv")
-totalData <- read.csv("C:/Users/xavim/Rprojects/DataMining/PAC1/titanic.csv", stringsAsFactors = FALSE)
+totalData <- read.csv("titanic.csv", stringsAsFactors = FALSE)
 filas=dim(totalData)[1]
 totalData_crew=subset(totalData, totalData$class=="engineering crew")
 
@@ -82,6 +81,6 @@ ggplot(data = totalData1[!is.na(totalData[1:filas,]$age),],aes(x=age,fill=surviv
 
 #EXERCICI 2
 
-adult <- read.csv("C:/Users/xavim/Rprojects/DataMining/PAC1/adult.data", stringsAsFactors = FALSE, header=FALSE)
+adult <- read.csv("adult.data", stringsAsFactors = FALSE, header=FALSE)
 rows=dim(adult)[1]
 names(adult) <- c("age", "workclass", "fnlwgt","education", "education-num", "marital-status","occupation","relationship","race","sex","capital-gain","capital-loss","hours-per-week","native-country","earnings")
