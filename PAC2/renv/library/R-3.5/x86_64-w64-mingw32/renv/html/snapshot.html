@@ -11,8 +11,7 @@
 
 <p>Call <code>snapshot()</code> to create a <strong>lockfile</strong> capturing the state of a project's
 <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> package dependencies. The lockfile can be used to later restore these
-project's dependencies as required. See the <a href="lockfile.html">lockfile</a> documentation for more
-details on the structure of a lockfile.
+project's dependencies as required.
 </p>
 
 
@@ -23,10 +22,12 @@ snapshot(
   project = NULL,
   ...,
   library = NULL,
-  lockfile = file.path(project, "renv.lock"),
+  lockfile = paths$lockfile(project = project),
   type = settings$snapshot.type(project = project),
-  confirm = interactive(),
-  force = FALSE
+  packages = NULL,
+  prompt = interactive(),
+  force = FALSE,
+  reprex = FALSE
 )
 </pre>
 
@@ -42,7 +43,8 @@ directory is used instead.</p>
 </td></tr>
 <tr valign="top"><td><code>...</code></td>
 <td>
-<p>Optional arguments; reserved for future expansion.</p>
+<p>Unused arguments, reserved for future expansion. If any arguments
+are matched to <code>...</code>, <code>renv</code> will signal an error.</p>
 </td></tr>
 <tr valign="top"><td><code>library</code></td>
 <td>
@@ -59,19 +61,39 @@ directly instead.</p>
 <tr valign="top"><td><code>type</code></td>
 <td>
 <p>The type of snapshot to perform. See <strong>Snapshot Type</strong> for
-more details. When <code>NULL</code> (the default), a &quot;packrat&quot;-style snapshot
-is performed.</p>
+more details.</p>
 </td></tr>
-<tr valign="top"><td><code>confirm</code></td>
+<tr valign="top"><td><code>packages</code></td>
 <td>
-<p>Boolean; prompt the user before taking any action?</p>
+<p>A vector of packages to be included in the lockfile. When
+<code>NULL</code> (the default), all packages relevant for the type of snapshot being
+performed will be included. When set, the <code>type</code> argument is ignored.
+Recursive dependencies of the specified packages will be added to the
+lockfile as well.</p>
+</td></tr>
+<tr valign="top"><td><code>prompt</code></td>
+<td>
+<p>Boolean; prompt the user before taking any action? For backwards
+compatibility, <code>confirm</code> is accepted as an alias for <code>prompt</code>.</p>
 </td></tr>
 <tr valign="top"><td><code>force</code></td>
 <td>
-<p>Boolean; force generation of a lockfile even when preflight
+<p>Boolean; force generation of a lockfile even when pre-flight
 validation checks have failed?</p>
 </td></tr>
+<tr valign="top"><td><code>reprex</code></td>
+<td>
+<p>Boolean; generate output appropriate for embedding the lockfile
+as part of a <a href="https://www.tidyverse.org/help/#reprex">reprex</a>?</p>
+</td></tr>
 </table>
+
+
+<h3>Details</h3>
+
+<p>See the <a href="lockfile.html">lockfile</a> documentation for more details on the structure of a
+lockfile.
+</p>
 
 
 <h3>Value</h3>
@@ -88,25 +110,33 @@ selecting a different snapshot mode. The modes available are as follows:
 </p>
 
 <dl>
-<dt><code>"simple"</code></dt><dd>
+<dt><code>"all"</code></dt><dd>
 <p>Capture all packages within the active <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> libraries in the lockfile.
 This is the quickest and simplest method, but may lead to undesired
 packages (e.g. development dependencies) entering the lockfile.
 </p>
 </dd>
-<dt><code>"packrat"</code></dt><dd>
-<p>Perform a Packrat-style snapshot. The intersection of packages discovered in
-your <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> libraries, alongside those discovered in your <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> code by
-<code>renv::dependencies()</code>, will enter the lockfile. This helps ensure that only
-the packages you are using will enter the lockfile, but may be slower if your
-project contains a large number of files. If this becomes an issue, you might
+<dt><code>"implicit"</code></dt><dd>
+<p>Only capture packages which appear to be used in your project in the
+lockfile. The intersection of packages installed in your <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> libraries,
+alongside those used in your <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> code as inferred by <code>renv::dependencies()</code>,
+will enter the lockfile. This helps ensure that only the packages your
+project requires will enter the lockfile, but may be slower if your project
+contains a large number of files. If this becomes an issue, you might
 consider using <code>.renvignore</code> files to limit which files <code>renv</code> uses for
 dependency discovery, or explicitly declaring your required dependencies in a
-<code>DESCRIPTION</code> file.
+<code>DESCRIPTION</code> file. You can also force a dependency on a particular package
+by writing e.g. <code style="white-space: pre;">library(&lt;package&gt;)</code> into a file called <code>dependencies.R</code>.
+</p>
+</dd>
+<dt><code>"explicit"</code></dt><dd>
+<p>Only capture packages which are explicitly listed in the project
+<code>DESCRIPTION</code> file. This workflow is recommended for users who wish to
+manage their project's <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> package dependencies directly.
 </p>
 </dd>
 <dt><code>"custom"</code></dt><dd>
-<p>Like <code>"packrat"</code>, but use a custom user-defined filter instead. The filter
+<p>Like <code>"implicit"</code>, but use a custom user-defined filter instead. The filter
 should be specified by the <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> option <code>renv.snapshot.filter</code>, and should
 either be a character vector naming a function (e.g. <code>"package::method"</code>),
 or be a function itself. The function should only accept one argument (the
@@ -116,9 +146,14 @@ in the lockfile.
 </dd>
 </dl>
 
-<p>By default, <code>"packrat"</code>-style snapshots are used. The snapshot type can be
+<p>By default, <code>"implicit"</code>-style snapshots are used. The snapshot type can be
 configured on a project-specific basis using the <code>renv</code> project <a href="settings.html">settings</a>
-mechanism.
+mechanism. For example, to use <code>"explicit"</code> snapshots in a project:</p>
+<pre>renv::settings$snapshot.type("explicit")
+</pre>
+<p>When the <code>packages</code> argument is set, <code>type</code> is ignored, and instead only the
+requested set of packages, and their recursive dependencies, will be written
+to the lockfile.
 </p>
 
 
@@ -165,5 +200,5 @@ options(renv.config.auto.snapshot = auto.snapshot)
 ## End(Not run)
 </pre>
 
-<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.9.2 <a href="00Index.html">Index</a>]</div>
+<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.13.1 <a href="00Index.html">Index</a>]</div>
 </body></html>

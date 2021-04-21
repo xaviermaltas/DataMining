@@ -16,7 +16,7 @@
 <h3>Usage</h3>
 
 <pre>
-upgrade(project = NULL, version = NULL, reload = NULL, confirm = interactive())
+upgrade(project = NULL, version = NULL, reload = NULL, prompt = interactive())
 </pre>
 
 
@@ -42,9 +42,9 @@ default), <code>renv</code> will be re-loaded only if updating <code>renv</code>
 active project. Note that this may fail if you've loaded packages
 which also depend on <code>renv</code>.</p>
 </td></tr>
-<tr valign="top"><td><code>confirm</code></td>
+<tr valign="top"><td><code>prompt</code></td>
 <td>
-<p>Boolean; confirm upgrade before proceeding?</p>
+<p>Boolean; prompt upgrade before proceeding?</p>
 </td></tr>
 </table>
 
@@ -83,5 +83,5 @@ renv::upgrade(version = "master")
 ## End(Not run)
 </pre>
 
-<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.9.2 <a href="00Index.html">Index</a>]</div>
+<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.13.1 <a href="00Index.html">Index</a>]</div>
 </body></html>

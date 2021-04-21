@@ -20,10 +20,11 @@ CRAN and GitHub package sources are supported.
 update(
   packages = NULL,
   ...,
+  exclude = NULL,
   library = NULL,
   rebuild = FALSE,
   check = FALSE,
-  confirm = interactive(),
+  prompt = interactive(),
   project = NULL
 )
 </pre>
@@ -34,12 +35,19 @@ update(
 <table summary="R argblock">
 <tr valign="top"><td><code>packages</code></td>
 <td>
-<p>A character vector of <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> packages to update. When <code>NULL</code>,
-all packages within the required libraries will be updated.</p>
+<p>A character vector of <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> packages to update. When <code>NULL</code>
+(the default), all packages will be updated.</p>
 </td></tr>
 <tr valign="top"><td><code>...</code></td>
 <td>
-<p>Optional arguments; reserved for future expansion.</p>
+<p>Unused arguments, reserved for future expansion. If any arguments
+are matched to <code>...</code>, <code>renv</code> will signal an error.</p>
+</td></tr>
+<tr valign="top"><td><code>exclude</code></td>
+<td>
+<p>A set of packages to explicitly exclude from updating.
+Use <code style="white-space: pre;">renv::update(exclude = &lt;...&gt;)</code> to update all packages except for
+a specific set of excluded packages.</p>
 </td></tr>
 <tr valign="top"><td><code>library</code></td>
 <td>
@@ -50,17 +58,19 @@ library will be used instead.</p>
 <td>
 <p>Force packages to be rebuilt, thereby bypassing any installed
 versions of the package available in the cache? This can either be a
-boolean (indicating that the requested package(s) should be rebuilt), or a
+boolean (indicating that all installed packages should be rebuilt), or a
 vector of package names indicating which packages should be rebuilt.</p>
 </td></tr>
 <tr valign="top"><td><code>check</code></td>
 <td>
 <p>Boolean; check for package updates without actually
-installing available updates?</p>
+installing available updates? This is useful when you'd like to determine
+what updates are available, without actually installing those updates.</p>
 </td></tr>
-<tr valign="top"><td><code>confirm</code></td>
+<tr valign="top"><td><code>prompt</code></td>
 <td>
-<p>Boolean; prompt the user before taking any action?</p>
+<p>Boolean; prompt the user before taking any action? For backwards
+compatibility, <code>confirm</code> is accepted as an alias for <code>prompt</code>.</p>
 </td></tr>
 <tr valign="top"><td><code>project</code></td>
 <td>
@@ -76,6 +86,11 @@ directory is used instead.</p>
 <p>Updates will only be checked from the same source &ndash; for example,
 if a package was installed from GitHub, but a newer version is
 available on CRAN, that updated version will not be seen.
+</p>
+<p>You can call <code>renv::update()</code> with no arguments to update all packages within
+the project, excluding any packages ignored via the <code>ignored.packages</code>
+project setting. Use the <code>exclude</code> argument to further refine the exclusion
+criteria if desired.
 </p>
 
 
@@ -97,5 +112,5 @@ renv::update("dplyr")
 ## End(Not run)
 </pre>
 
-<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.9.2 <a href="00Index.html">Index</a>]</div>
+<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.13.1 <a href="00Index.html">Index</a>]</div>
 </body></html>

@@ -394,21 +394,79 @@ A partir del joc de dades disponible en el següent enllaç http://archive.ics.u
 
 Nota: Si ho desitges pots utilitzar un altre conjunt de dades propi o d'algun repositori dades obertes sempre que sigui similar en diversitat de tipus de variables al proposat..
 
+### Context de les dades
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+#Carregem les llibreries
+# https://cran.r-project.org/web/packages/ggplot2/index.html
+if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
+# https://cran.r-project.org/web/packages/dplyr/index.html
+if (!require('dplyr')) install.packages('dplyr'); library('dplyr')
+
+if(!require('magrittr')) install.packages('magrittr'); library('magrittr')
+
+library(skimr)
+library(tidyr)
+library(funModeling)
+library(plyr)
+```
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Carreguem el joc de dades
 adult <- read.csv('adult.data', stringsAsFactors = FALSE, header = FALSE)
+#adult <- read.table('https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data', sep = ',', fill = F, strip.white = T, hader = FALSE)
+
 rows=dim(adult)[1]
 
 #Afegim els header de cada column
 names(adult) <- c("age", "workclass", "fnlwgt","education", "education-num", "marital-status","occupation","relationship","race","sex","capital-gain","capital-loss","hours-per-week","native-country","earnings")
-
-#Netegem els elements
-# Redacta aquí el codi R per a l'estudi del joc de dades
 ```
-> Escriu aquí la resposta a la pregunta
+
+Seguidament observem l'estructura i les primeres files del joc de dades
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+#Estructura del joc de dades
+str(adult)
+
+#Primers registres del joc de dades
+head(adult)
+
+#Dimensió de les dades
+dim(adult)
+
+#Estadistiques bàsiques
+summary(adult)
+```
+
+### Neteja de les dades
+
+Analitzem si trobem valors buits o nulls.
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+#Cerca dels valors null
+colSums(is.na(adult))
+
+#Recompte dels valors que prenen valor '?'
+colSums(adult=="?")
 
 
+#Analisi dels valors del parametre 'workclass'
+table(adult$workclass)
+```
+Degut a que observem que hi ha certs camps on els valors desconeguts es troben setejats amb tal que '?', modificarem aquest valor per a valors NA.
+Realitzarem un canvi en la forma en com incorporem les dades.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+adult$workclass[adult$workclass == "?"] <- "Desconegut"
+#adult$occupation[adult$occupation == "?"] <- "Desconeguda"
+#adult$nativeCountry[adult$nativeCountry == "?"] <- "Desconegut"
+
+
+table(adult$workclass)
+
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+```
 ****
 # Criteris d'avaluació
 ****

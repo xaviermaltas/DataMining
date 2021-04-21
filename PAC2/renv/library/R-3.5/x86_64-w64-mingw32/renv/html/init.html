@@ -22,6 +22,7 @@ are then installed to the project's private library.
 init(
   project = NULL,
   ...,
+  profile = NULL,
   settings = NULL,
   bare = FALSE,
   force = FALSE,
@@ -40,7 +41,14 @@ changed to match the requested project directory.</p>
 </td></tr>
 <tr valign="top"><td><code>...</code></td>
 <td>
-<p>Optional arguments; reserved for future expansion.</p>
+<p>Unused arguments, reserved for future expansion. If any arguments
+are matched to <code>...</code>, <code>renv</code> will signal an error.</p>
+</td></tr>
+<tr valign="top"><td><code>profile</code></td>
+<td>
+<p>The profile to be activated. When <code>NULL</code>, the default
+profile is activated instead. See <code>vignette("profiles", package = "renv")</code>
+for more information.</p>
 </td></tr>
 <tr valign="top"><td><code>settings</code></td>
 <td>
@@ -56,7 +64,7 @@ and install R package dependencies?</p>
 <td>
 <p>Boolean; force initialization? By default, <code>renv</code> will refuse
 to initialize the home directory as a project, to defend against accidental
-misusages of <code>init()</code>.</p>
+mis-usages of <code>init()</code>.</p>
 </td></tr>
 <tr valign="top"><td><code>restart</code></td>
 <td>
@@ -130,7 +138,8 @@ launched within the project are automatically loaded.
 </p>
 </li>
 <li> <p><code>renv/.gitignore</code>: This is used to instruct Git to ignore the project's
-private library, as it does not need to be
+private library, as it should normally not be committed to a version
+control repository.
 </p>
 </li>
 <li> <p><code>.Rbuildignore</code>: to ensure that the <code>renv</code> directory is ignored during
@@ -176,5 +185,5 @@ options(renv.config.auto.snapshot = auto.snapshot)
 ## End(Not run)
 </pre>
 
-<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.9.2 <a href="00Index.html">Index</a>]</div>
+<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.13.1 <a href="00Index.html">Index</a>]</div>
 </body></html>

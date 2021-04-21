@@ -22,7 +22,8 @@ paths
 
 <h3>Format</h3>
 
-<p>An object of class <code>list</code> of length 3.</p>
+<p>An object of class <code>list</code> of length 5.
+</p>
 
 
 <h3>Details</h3>
@@ -67,39 +68,55 @@ enumerated below:
 <table summary="Rd table">
 <tr>
  <td style="text-align: left;">
-<strong>Environment Variable</strong> </td><td style="text-align: left;"> <strong>Description</strong> </td>
+<strong>Environment Variable</strong>     </td><td style="text-align: left;"> <strong>Description</strong> </td>
 </tr>
 <tr>
  <td style="text-align: left;">
-<code>RENV_PATHS_ROOT</code>        </td><td style="text-align: left;"> The root path used for global state storage. </td>
+<code>RENV_PATHS_ROOT</code>            </td><td style="text-align: left;"> The root path used for global state storage. </td>
 </tr>
 <tr>
  <td style="text-align: left;">
-<code>RENV_PATHS_LIBRARY</code>     </td><td style="text-align: left;"> The root path containing different <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> libraries. </td>
+<code>RENV_PATHS_LIBRARY</code>         </td><td style="text-align: left;"> The path to the project library. </td>
 </tr>
 <tr>
  <td style="text-align: left;">
-<code>RENV_PATHS_LOCAL</code>       </td><td style="text-align: left;"> The path containing local package sources. </td>
+<code>RENV_PATHS_LIBRARY_ROOT</code>    </td><td style="text-align: left;"> The parent path for project libraries. </td>
 </tr>
 <tr>
  <td style="text-align: left;">
-<code>RENV_PATHS_SOURCE</code>      </td><td style="text-align: left;"> The path containing downloaded package sources. </td>
+<code>RENV_PATHS_LIBRARY_STAGING</code> </td><td style="text-align: left;"> The parent path used for staged package installs. </td>
 </tr>
 <tr>
  <td style="text-align: left;">
-<code>RENV_PATHS_BINARY</code>      </td><td style="text-align: left;"> The path containing downloaded package binaries. </td>
+<code>RENV_PATHS_LOCAL</code>           </td><td style="text-align: left;"> The path containing local package sources. </td>
 </tr>
 <tr>
  <td style="text-align: left;">
-<code>RENV_PATHS_CACHE</code>       </td><td style="text-align: left;"> The path containing cached package installations. </td>
+<code>RENV_PATHS_SOURCE</code>          </td><td style="text-align: left;"> The path containing downloaded package sources. </td>
 </tr>
 <tr>
  <td style="text-align: left;">
-<code>RENV_PATHS_RTOOLS</code>      </td><td style="text-align: left;"> (Windows only) The path to <a href="https://cran.r-project.org/bin/windows/Rtools/">Rtools</a>. </td>
+<code>RENV_PATHS_BINARY</code>          </td><td style="text-align: left;"> The path containing downloaded package binaries. </td>
 </tr>
 <tr>
  <td style="text-align: left;">
-<code>RENV_PATHS_EXTSOFT</code>     </td><td style="text-align: left;"> (Windows only) The path containing external software needed for compilation of Windows source packages. </td>
+<code>RENV_PATHS_CACHE</code>           </td><td style="text-align: left;"> The path containing cached package installations. </td>
+</tr>
+<tr>
+ <td style="text-align: left;">
+<code>RENV_PATHS_PREFIX</code>          </td><td style="text-align: left;"> An optional prefix to prepend to the constructed library / cache paths. </td>
+</tr>
+<tr>
+ <td style="text-align: left;">
+<code>RENV_PATHS_RTOOLS</code>          </td><td style="text-align: left;"> (Windows only) The path to <a href="https://cran.r-project.org/bin/windows/Rtools/">Rtools</a>. </td>
+</tr>
+<tr>
+ <td style="text-align: left;">
+<code>RENV_PATHS_EXTSOFT</code>         </td><td style="text-align: left;"> (Windows only) The path containing external software needed for compilation of Windows source packages. </td>
+</tr>
+<tr>
+ <td style="text-align: left;">
+<code>RENV_PATHS_MRAN</code>            </td><td style="text-align: left;"> The path containing MRAN-related metadata. See <code>vignette("mran", package = "renv")</code> for more details. </td>
 </tr>
 <tr>
  <td style="text-align: left;">
@@ -112,18 +129,39 @@ enumerated below:
 to the set paths as appropriate. For example, if you have set:</p>
 <pre>Sys.setenv(RENV_PATHS_CACHE = "/mnt/shared/renv/cache")
 </pre>
-<p>then the directory used for the cache will still depend on the <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> version
-(e.g. <code>3.5</code>) and the <code>renv</code> cache version (e.g. <code>v2</code>). For example:</p>
-<pre>/mnt/shared/renv/cache/R-3.5/v2
+<p>then the directory used for the cache will still depend on the <code>renv</code> cache
+version (e.g. <code>v2</code>), the <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> version (e.g. <code>3.5</code>) and the platform (e.g.
+<code>x86_64-pc-linux-gnu</code>). For example:</p>
+<pre>/mnt/shared/renv/cache/v2/R-3.5/x86_64-pc-linux-gnu
 </pre>
 <p>This ensures that you can set a single <code>RENV_PATHS_CACHE</code> environment variable
 globally without worry that it may cause collisions or errors if multiple
 versions of <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> needed to interact with the same cache.
 </p>
+<p>If you need to share the same cache with multiple different Linux operating
+systems, you may want to set the <code>RENV_PATHS_PREFIX</code> environment variable
+to help disambiguate the paths used on Linux. For example, setting
+<code>RENV_PATHS_PREFIX = "ubuntu-bionic"</code> would instruct <code>renv</code> to construct a
+cache path like:</p>
+<pre>/mnt/shared/renv/cache/v2/ubuntu-bionic/R-3.5/x86_64-pc-linux-gnu
+</pre>
+<p>If this is required, it's strongly recommended that this environment
+variable is set in your <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> installation's <code>Renviron.site</code> file, typically
+located at <code>file.path(R.home("etc"), "Renviron.site")</code>, so that it can be
+active for any <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> sessions launched on that machine.
+</p>
+<p>Starting from <code style="white-space: pre;">renv 0.13.0</code>, you can also instruct <code>renv</code> to auto-generate
+an OS-specific component to include as part of library and cache paths,
+by setting the environment variable:</p>
+<pre>RENV_PATHS_PREFIX_AUTO = TRUE
+</pre>
+<p>The prefix will be constructed based on fields within the system's
+<code style="white-space: pre;">/etc/os-release</code> file.
+</p>
 <p>If reproducibility of a project is desired on a particular machine, it is
 highly recommended that the <code>renv</code> cache of installed packages + binary
-packages is stored, so that packages can be easily restored in the future &ndash;
-installation of packages from source can often be arduous.
+packages is backed up and persisted, so that packages can be easily restored
+in the future &ndash; installation of packages from source can often be arduous.
 </p>
 <p>If you want these settings to persist in your project, it is recommended that
 you add these to an appropriate <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> startup file. For example, these could be
@@ -137,7 +175,7 @@ set in:
 <li><p> The user-level <code>.Renviron</code>;
 </p>
 </li>
-<li><p> A file at <code style="white-space: pre;">$(R RHOME)/etc/Renviron.site</code>.
+<li><p> A file at <code>file.path(R.home("etc"), "Renviron.site")</code>.
 </p>
 </li></ul>
 
@@ -203,5 +241,5 @@ any packages within the cache are no longer in use, and can be removed.
 path &lt;- renv::paths$library()
 </pre>
 
-<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.9.2 <a href="00Index.html">Index</a>]</div>
+<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.13.1 <a href="00Index.html">Index</a>]</div>
 </body></html>

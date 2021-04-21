@@ -17,7 +17,7 @@ the project's library (if any).
 <h3>Usage</h3>
 
 <pre>
-status(project = NULL, ..., library = NULL, lockfile = NULL)
+status(project = NULL, ..., library = NULL, lockfile = NULL, cache = FALSE)
 </pre>
 
 
@@ -32,7 +32,8 @@ directory is used instead.</p>
 </td></tr>
 <tr valign="top"><td><code>...</code></td>
 <td>
-<p>Optional arguments; reserved for future expansion.</p>
+<p>Unused arguments, reserved for future expansion. If any arguments
+are matched to <code>...</code>, <code>renv</code> will signal an error.</p>
 </td></tr>
 <tr valign="top"><td><code>library</code></td>
 <td>
@@ -43,6 +44,13 @@ with the requested project are used.</p>
 <td>
 <p>The path to a lockfile. By default, the project lockfile
 (called <code>renv.lock</code>) is used.</p>
+</td></tr>
+<tr valign="top"><td><code>cache</code></td>
+<td>
+<p>Boolean; perform diagnostics on the global package cache?
+When <code>TRUE</code>, <code>renv</code> will validate that the packages installed into the
+cache are installed at the expected + proper locations, and validate the
+hashes used for those storage locations.</p>
 </td></tr>
 </table>
 
@@ -88,5 +96,5 @@ options(renv.config.auto.snapshot = auto.snapshot)
 ## End(Not run)
 </pre>
 
-<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.9.2 <a href="00Index.html">Index</a>]</div>
+<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.13.1 <a href="00Index.html">Index</a>]</div>
 </body></html>

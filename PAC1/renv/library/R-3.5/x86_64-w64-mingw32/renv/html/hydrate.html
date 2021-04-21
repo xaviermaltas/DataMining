@@ -10,15 +10,22 @@
 <h3>Description</h3>
 
 <p>Discover the <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> packages used within a project, and then install those
-packages into the active library. This effectively allows you to clone the
-state of your system R libraries for use within a project library.
+packages into the active library. This effectively allows you to fork the
+state of your default <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> libraries for use within a project library.
 </p>
 
 
 <h3>Usage</h3>
 
 <pre>
-hydrate(packages = NULL, ..., library = NULL, project = NULL)
+hydrate(
+  packages = NULL,
+  ...,
+  library = NULL,
+  update = FALSE,
+  sources = NULL,
+  project = NULL
+)
 </pre>
 
 
@@ -32,12 +39,25 @@ set of packages as reported by <code><a href="dependencies.html">dependencies()<
 </td></tr>
 <tr valign="top"><td><code>...</code></td>
 <td>
-<p>Optional arguments; reserved for future expansion.</p>
+<p>Unused arguments, reserved for future expansion. If any arguments
+are matched to <code>...</code>, <code>renv</code> will signal an error.</p>
 </td></tr>
 <tr valign="top"><td><code>library</code></td>
 <td>
 <p>The <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> library to be hydrated. When <code>NULL</code>, the active
 library as reported by <code>.libPaths()</code> is used.</p>
+</td></tr>
+<tr valign="top"><td><code>update</code></td>
+<td>
+<p>Boolean; should <code>hydrate()</code> attempt to update already-installed
+packages if the requested package is already installed in the project
+library? Set this to <code>"all"</code> if you'd like <em>all</em> packages to be refreshed
+from the source library if possible.</p>
+</td></tr>
+<tr valign="top"><td><code>sources</code></td>
+<td>
+<p>A set of library paths from which <code>renv</code> should attempt to
+draw packages. See <strong>Sources</strong> for more details.</p>
 </td></tr>
 <tr valign="top"><td><code>project</code></td>
 <td>
@@ -50,10 +70,27 @@ directory is used instead.</p>
 
 <h3>Details</h3>
 
+<p>It may occasionally be useful to use <code>renv::hydrate()</code> to update the packages
+used within a project that has already been initialized. However, be warned
+that it's possible that the packages pulled in may not actually be compatible
+with the packages installed in the project library, so you should exercise
+caution when doing so.
+</p>
+
+
+<h3>Value</h3>
+
+<p>A named <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> list, giving the packages that were used for hydration
+as well as the set of packages which were not found.
+</p>
+
+
+<h3>Sources</h3>
+
 <p><code>hydrate()</code> attempts to re-use packages already installed on your system,
 to avoid unnecessary attempts to download and install packages from remote
-sources. <code>hydrate()</code> will attempt to discover <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> packages from the
-following sources (in order):
+sources. When <code>NULL</code> (the default), <code>hydrate()</code> will attempt to discover <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span>
+packages from the following sources (in order):
 </p>
 
 <ul>
@@ -72,13 +109,6 @@ following sources (in order):
 
 <p>If package is discovered in one of these locations, <code>renv</code> will attempt to
 copy or link that package into the requested library as appropriate.
-</p>
-
-
-<h3>Value</h3>
-
-<p>A named <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> list, giving the packages that were used for hydration
-as well as the set of packages which were not found.
 </p>
 
 
@@ -102,5 +132,5 @@ renv::hydrate()
 ## End(Not run)
 </pre>
 
-<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.9.2 <a href="00Index.html">Index</a>]</div>
+<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.13.1 <a href="00Index.html">Index</a>]</div>
 </body></html>

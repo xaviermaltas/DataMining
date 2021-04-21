@@ -20,8 +20,9 @@ install(
   packages = NULL,
   ...,
   library = NULL,
+  type = NULL,
   rebuild = FALSE,
-  confirm = interactive(),
+  prompt = interactive(),
   project = NULL
 )
 </pre>
@@ -38,23 +39,30 @@ as required.</p>
 </td></tr>
 <tr valign="top"><td><code>...</code></td>
 <td>
-<p>Optional arguments; reserved for future expansion.</p>
+<p>Unused arguments, reserved for future expansion. If any arguments
+are matched to <code>...</code>, <code>renv</code> will signal an error.</p>
 </td></tr>
 <tr valign="top"><td><code>library</code></td>
 <td>
 <p>The <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> library to be used. When <code>NULL</code>, the active project
 library will be used instead.</p>
 </td></tr>
+<tr valign="top"><td><code>type</code></td>
+<td>
+<p>The type of package to install (&quot;source&quot; or &quot;binary&quot;). Defaults
+to the value of <code>getOption("pkgType")</code>.</p>
+</td></tr>
 <tr valign="top"><td><code>rebuild</code></td>
 <td>
 <p>Force packages to be rebuilt, thereby bypassing any installed
 versions of the package available in the cache? This can either be a
-boolean (indicating that the requested package(s) should be rebuilt), or a
+boolean (indicating that all installed packages should be rebuilt), or a
 vector of package names indicating which packages should be rebuilt.</p>
 </td></tr>
-<tr valign="top"><td><code>confirm</code></td>
+<tr valign="top"><td><code>prompt</code></td>
 <td>
-<p>Boolean; prompt the user before taking any action?</p>
+<p>Boolean; prompt the user before taking any action? For backwards
+compatibility, <code>confirm</code> is accepted as an alias for <code>prompt</code>.</p>
 </td></tr>
 <tr valign="top"><td><code>project</code></td>
 <td>
@@ -84,6 +92,50 @@ separate package installation backends in the future.
 </p>
 
 
+<h3>Bioconductor</h3>
+
+<p>Packages from Bioconductor can be installed by using the <code style="white-space: pre;">bioc::</code> prefix.
+For example,</p>
+<pre>renv::install("bioc::Biobase")
+</pre>
+<p>will install the latest-available version of <code>Biobase</code> from Bioconductor.
+</p>
+<p><code>renv</code> depends on <code>BiocManager</code> (or, for older versions of <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span>, <code>BiocInstaller</code>)
+for the installation of packages from Bioconductor. If these packages are
+not available, <code>renv</code> will attempt to automatically install them before
+fulfilling the installation request.
+</p>
+
+
+<h3>Remotes Syntax</h3>
+
+<p><code>renv</code> supports a subset of the <code>remotes</code> syntax used for package installation,
+as described in <a href="https://remotes.r-lib.org/articles/dependencies.html">https://remotes.r-lib.org/articles/dependencies.html</a>. See
+the examples below for more details.
+</p>
+
+
+<h3>Package Configuration</h3>
+
+<p>Many <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> packages have a <code>configure</code> script that needs to be run to prepare
+the package for installation. Arguments and environment variables can be
+passed through to those scripts in a manner similar to <a href="../../utils/html/install.packages.html">install.packages</a>.
+In particular, the <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> options <code>configure.args</code> and <code>configure.vars</code> can be
+used to map package names to their appropriate configuration. For example:</p>
+<pre># installation of RNetCDF may require us to set include paths for netcdf
+configure.args = c(RNetCDF = "--with-netcdf-include=/usr/include/udunits2"))
+options(configure.args = configure.args)
+renv::install("RNetCDF")
+</pre>
+<p>Similarly, additional flags that should be passed to <code style="white-space: pre;">R CMD INSTALL</code> can
+be set via the <code>install.opts</code> <span style="font-family: Courier New, Courier; color: #666666;"><b>R</b></span> option:</p>
+<pre># installation of R packages using the Windows Subsystem for Linux
+# may require the `--no-lock` flag to be set during install
+options(install.opts = "--no-lock")
+renv::install("xml2")
+</pre>
+
+
 <h3>Examples</h3>
 
 <pre>
@@ -98,12 +150,19 @@ renv::install("digest@0.6.18")
 # install 'digest' from GitHub (latest dev. version)
 renv::install("eddelbuettel/digest")
 
-# install a package from local sources
+# install a package from GitHub, using specific commit
+renv::install("eddelbuettel/digest@df55b00bff33e945246eff2586717452e635032f")
+
+# install a package from Bioconductor
+# (note: requires the BiocManager package)
+renv::install("bioc::Biobase")
+
+# install a package, specifying path explicitly
 renv::install("~/path/to/package")
 
 
 ## End(Not run)
 </pre>
 
-<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.9.2 <a href="00Index.html">Index</a>]</div>
+<hr /><div style="text-align: center;">[Package <em>renv</em> version 0.13.1 <a href="00Index.html">Index</a>]</div>
 </body></html>

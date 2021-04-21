@@ -1,8 +1,8 @@
 ---
-title: "Local Sources"
+title: "Installing from Local Sources"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Local Sources}
+  %\VignetteIndexEntry{Installing from Local Sources}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -46,6 +46,12 @@ place a tarball for this package in one of the following locations:
 Once this is done, `renv` will consult these directories during future attempts
 to restore packages installed from unknown sources.
 
+To directly install a package from these local sources, you must specify the package
+version or provide the full path to the tarball:
+
+- `renv::install("<package>@<version>")`
+- `renv::install("<project>/renv/local/<package>_<version>.tar.gz`
+
 Note that packages placed in one of these local sources will override any
 default source recorded in the lockfile. For example, if `skeleton 1.0.0` was
 also available on CRAN, `renv::restore()` would still use the locally-provided
@@ -76,6 +82,14 @@ example, you could have a package record in `renv.lock` of the form:
 }
 ```
 
-The main requirement is that your source path exists, and the path has an
-extension of either `.tar.gz`, (for source packages), `.tgz` (for macOS
-binaries) or `.zip` (for Windows binaries).
+Packages should have the following extensions, depending on whether the archive
+contains a binary copy of the package or the package sources:
+
+| **Platform** | **Binary** | **Sources** |
+| ------------ | ---------- | ----------- |
+| Windows      | `.zip`     | `.tar.gz`   |
+| macOS        | `.tgz`     | `.tar.gz`   |
+| Linux        | `.tar.gz`  | `.tar.gz`   |
+
+Note that on Linux, both binaries and sources should have the `.tar.gz`
+extension, but R and `renv` will handle this as appropriate during installation.
