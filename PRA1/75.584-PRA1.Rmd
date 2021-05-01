@@ -44,7 +44,7 @@ Les competències que es treballen en aquesta prova són:
 ## Objectius
 La correcta assimilació de tots els aspectes treballats durant el semestre.
 En aquesta pràctica abordem un cas real de mineria de dades on hem de posar en joc tots els conceptes treballats.
-Cal treballar tot el cicle de vida d'el projecte. Des del objectiu de el projecte fins a la implementació de el coneixement trobat passant per la preparació, neteja de les dades, coneixement de les dades, generació de el model, interpretació i avaluació.
+Cal treballar tot el cicle de vida del projecte. Des del objectiu de el projecte fins a la implementació de el coneixement trobat passant per la preparació, neteja de les dades, coneixement de les dades, generació de el model, interpretació i avaluació.
 
 ## Descripció de la PRA a realitzar
 
@@ -86,9 +86,9 @@ El món de l'analítica de dades es sustenta en 3 eixos:
 
 Com **primera part** de l'estudi analític que ens disposem a realitzar, es demana a l'estudiant que completi els següents passos:
 
-1. Plantejar un problema de analítica de dades detallant-ne els objectius analítics i explica una metodologia per a resoldre'ls d'acord amb lo practicat en les PAC anteriors i també d'acord a lo que s'ha aprés en el material didàctic.
+1. Plantejar un problema d'analítica de dades detallant-ne els objectius analítics i explica una metodologia per a resoldre'ls d'acord amb lo practicat en les PAC anteriors i també d'acord a lo que s'ha aprés en el material didàctic.
 
-2. Seleccionar un joc de dades i justificar la seva elecció. El joc de dades haurà de tenir capacitats perquè se li puguin aplicar algoritmes supervisats, algoritmes no supervisats i regles d'associació. També haurpa d'estar alineat amb el problema analític plantejat en el pas anterior.  
+2. Seleccionar un joc de dades i justificar la seva elecció. El joc de dades haurà de tenir capacitats perquè se li puguin aplicar algoritmes supervisats, algoritmes no supervisats i regles d'associació. També haurà d'estar alineat amb el problema analític plantejat en el pas anterior.  
 El joc de dades ha de tenir com a mínim 100 observacions i ha de ser diferent de l'utilitzat en les PAC anteriors.
 
 3. Realitzar una anàlisi exploratòria de el joc de dades seleccionat.
@@ -102,7 +102,7 @@ El joc de dades ha de tenir com a mínim 100 observacions i ha de ser diferent d
 ******
 # Rúbrica
 ******
-* 30%. Es planteja un problema propi de mineria de dades, s'en detallen els objectius analítics i s'explica detalladament la metodologia per a donar-los solució.
+* 30%. Es planteja un problema propi de mineria de dades, se'n detallen els objectius analítics i s'explica detalladament la metodologia per a donar-los solució.
 * 10%. Justificació de l'elecció del joc de dades on es detalla el potencial analític que s'intueix. L'estudiant haurà de visitar els següents portals de dades obertes per a seleccionar el seu joc de dades:  
   + [Datos.gob.es](https://datos.gob.es/es/catalogo?q=&frequency=%7B"type"%3A+"months"%2C+"value"%3A+"1"%7D&sort=score+desc%2C+metadata_modified+desc)
   + [UCI Machine Learning](https://archive.ics.uci.edu/ml/datasets.php)
