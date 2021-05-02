@@ -6,10 +6,10 @@ if (!require('dplyr')) install.packages('dplyr'); library('dplyr')
 
 if (!require(cluster)) install.packages(cluster);library(cluster)
 if(!require(MVA)) install.packages("MVA"); library(MVA)
-library(tidyr)
-library(cluster)
-library(plyr)
-library(readr)
+if(!require(tidyr)) install.packages("tidyr");library(tidyr)
+if(!require(cluster)) install.packages(cluster); library(cluster)
+if(!require(plyr)) install.packages(plyr); library(plyr)
+if(!require(readr)) install.packages(readr); library(readr)
 
 print("Hello World!")
 
@@ -56,7 +56,7 @@ for (i in c(2,3,4,5,6,7,8,9,10))
   sk            <- silhouette(y_cluster, d)
   resultados[i] <- mean(sk[,3])
 }
-plot(2:10,resultados[2:10],type="o",col="blue",pch=0,xlab="Nº of clusters",ylab="Silhouette")
+plot(2:10,resultados[2:10],type="o",col="blue",pch=0,xlab="N� of clusters",ylab="Silhouette")
 
 #k=3
 #clusters molt sobreposats
@@ -79,7 +79,7 @@ plot(2:10,resultados[2:10],type="o",col="blue",pch=0,xlab="Nº of clusters",ylab
 
 #k=3
 #clusters molt sobreposats
-fit2 <- kmeans(numeric2019Data, 10)
+fit3 <- kmeans(numeric2019Data, 73)
 y_cluster2 <- fit$cluster
-clusplot(numeric2019Data, fit2$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
+clusplot(numeric2019Data, fit3$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
 
