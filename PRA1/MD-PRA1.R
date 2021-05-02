@@ -56,7 +56,7 @@ for (i in c(2,3,4,5,6,7,8,9,10))
   sk            <- silhouette(y_cluster, d)
   resultados[i] <- mean(sk[,3])
 }
-plot(2:10,resultados[2:10],type="o",col="blue",pch=0,xlab="Nº of clusters",ylab="Silhouette")
+plot(2:10,resultados[2:10],type="o",col="blue",pch=0,xlab="Nï¿½ of clusters",ylab="Silhouette")
 
 #k=3
 #clusters molt sobreposats
@@ -83,3 +83,14 @@ fit3 <- kmeans(numeric2019Data, 73)
 y_cluster2 <- fit$cluster
 clusplot(numeric2019Data, fit3$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
 
+if(!require(fpc)) install.packages(fpc); library(fpc)
+if(!require(class)) install.packages(class); library(class)
+
+fit_ch  <- kmeansruns(numericData, krange = 1:73, criterion = "ch")
+fit_asw <- kmeansruns(numericData, krange = 1:73, criterion = "asw") 
+
+print(fit_ch$bestk)
+print(fit_asw$bestk)
+
+cl3 <- kmeans(flores_data, 3)
+with(flores_data, pairs(flores_data, col=c(1:4)[cl3$cluster])) 
