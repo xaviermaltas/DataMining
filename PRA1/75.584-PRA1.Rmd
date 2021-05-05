@@ -147,7 +147,7 @@ if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 # https://cran.r-project.org/web/packages/dplyr/index.html
 if (!require('dplyr')) install.packages('dplyr'); library('dplyr')
 
-if (!require(cluster)) install.packages(cluster);library(cluster)
+if(!require(cluster)) install.packages(cluster);library(cluster)
 if(!require(MVA)) install.packages("MVA"); library(MVA)
 if(!require(tidyr)) install.packages("tidyr");library(tidyr)
 if(!require(cluster)) install.packages("cluster"); library(cluster)
@@ -181,13 +181,13 @@ Filtratge de les dades per quedar-nos amb els valors numèrics que ens interesse
 ```{r message= FALSE, warning=FALSE}
 numericData <- datafromcsv %>% select(is.numeric)
 numericData2019 <- atur2019 %>% select(is.numeric)
-numericRows =dim(numericData)[1]
+numericRows = dim(numericData)[1]
 ```
 
 
 ```{r message= FALSE, warning=FALSE}
-b <- boxplot(PesAtur ~ CodiDistricte, data = numericData2019)
-
+# b <- boxplot(PesAtur ~ CodiDistricte, data = numericData2019)
+b <- boxplot( numericData2019[])
 ```
 
 ```{r message= FALSE, warning=FALSE}
