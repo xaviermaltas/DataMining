@@ -204,6 +204,13 @@ pre code {
 <li><a href="#enunciat"><span class="toc-section-number">2</span> Enunciat</a></li>
 <li><a href="#rúbrica"><span class="toc-section-number">3</span> Rúbrica</a></li>
 <li><a href="#recursos-de-programació"><span class="toc-section-number">4</span> Recursos de programació</a></li>
+<li><a href="#estudi-analític"><span class="toc-section-number">5</span> Estudi Analític</a>
+<ul>
+<li><a href="#plantejament-del-problema-analític."><span class="toc-section-number">5.1</span> Plantejament del problema analític.</a></li>
+<li><a href="#justificació-de-la-selecció-de-dades."><span class="toc-section-number">5.2</span> Justificació de la selecció de dades.</a></li>
+<li><a href="#anàlisi-exploratiu-de-les-dades."><span class="toc-section-number">5.3</span> Anàlisi exploratiu de les dades.</a></li>
+<li><a href="#tasques-de-neteja"><span class="toc-section-number">5.4</span> Tasques de neteja</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -323,7 +330,95 @@ El joc de dades ha de tenir com a mínim 100 observacions i ha de ser diferent d
 </ul></li>
 </ul>
 <hr />
+</div>
+<div id="estudi-analític" class="section level1" number="5">
+<h1 number="5"><span class="header-section-number">5</span> Estudi Analític</h1>
 <hr />
+<div id="plantejament-del-problema-analític." class="section level2" number="5.1">
+<h2 number="5.1"><span class="header-section-number">5.1</span> Plantejament del problema analític.</h2>
+</div>
+<div id="justificació-de-la-selecció-de-dades." class="section level2" number="5.2">
+<h2 number="5.2"><span class="header-section-number">5.2</span> Justificació de la selecció de dades.</h2>
+</div>
+<div id="anàlisi-exploratiu-de-les-dades." class="section level2" number="5.3">
+<h2 number="5.3"><span class="header-section-number">5.3</span> Anàlisi exploratiu de les dades.</h2>
+<p>Càrrega de les llibreries.</p>
+<pre class="r"><code># https://cran.r-project.org/web/packages/ggplot2/index.html
+if (!require(&#39;ggplot2&#39;)) install.packages(&#39;ggplot2&#39;); library(&#39;ggplot2&#39;)
+
+# https://cran.r-project.org/web/packages/dplyr/index.html
+if (!require(&#39;dplyr&#39;)) install.packages(&#39;dplyr&#39;); library(&#39;dplyr&#39;)
+
+if (!require(cluster)) install.packages(cluster);library(cluster)
+if(!require(MVA)) install.packages(&quot;MVA&quot;); library(MVA)
+if(!require(tidyr)) install.packages(&quot;tidyr&quot;);library(tidyr)
+if(!require(cluster)) install.packages(&quot;cluster&quot;); library(cluster)
+if(!require(plyr)) install.packages(&quot;plyr&quot;); library(plyr)
+if(!require(readr)) install.packages(&quot;readr&quot;); library(readr)</code></pre>
+<p>Càrrega de les dades.</p>
+<pre class="r"><code>#https://datascienceplus.com/how-to-import-multiple-csv-files-simultaneously-in-r-and-create-a-data-frame/
+mycsvfiles = list.files(pattern=&quot;*.csv&quot;, full.names=TRUE)
+mycsvfiles</code></pre>
+<pre><code>##  [1] &quot;./2012_atur.csv&quot; &quot;./2013_atur.csv&quot; &quot;./2014_atur.csv&quot; &quot;./2015_atur.csv&quot;
+##  [5] &quot;./2016_atur.csv&quot; &quot;./2017_atur.csv&quot; &quot;./2018_atur.csv&quot; &quot;./2019_atur.csv&quot;
+##  [9] &quot;./2020_atur.csv&quot; &quot;./2021_atur.csv&quot;</code></pre>
+<pre class="r"><code>datafromcsv = ldply(mycsvfiles, read_csv)
+colnames(datafromcsv) &lt;- c(&quot;Any&quot;, &quot;Mes&quot;, &quot;CodiDistricte&quot;, &quot;NomDistricte&quot;, &quot;CodiBarri&quot;, &quot;NomBarri&quot;, &quot;Poblacio16_64anys&quot;, &quot;PesAtur&quot;)
+
+#Only Atur2019
+atur2019&lt;-read.csv(&quot;2019_atur.csv&quot;, header = T, sep=&quot;,&quot;)
+colnames(atur2019) &lt;- c(&quot;Any&quot;, &quot;Mes&quot;, &quot;CodiDistricte&quot;, &quot;NomDistricte&quot;, &quot;CodiBarri&quot;, &quot;NomBarri&quot;, &quot;Poblacio16_64anys&quot;, &quot;PesAtur&quot;)</code></pre>
+<p>Anàlisi de l’estructura i forma de les dades.</p>
+<pre class="r"><code>str(datafromcsv)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    8103 obs. of  8 variables:
+##  $ Any              : num  2012 2012 2012 2012 2012 ...
+##  $ Mes              : num  1 1 1 1 1 1 1 1 1 1 ...
+##  $ CodiDistricte    : num  1 1 1 1 2 2 2 2 2 2 ...
+##  $ NomDistricte     : chr  &quot;Ciutat Vella&quot; &quot;Ciutat Vella&quot; &quot;Ciutat Vella&quot; &quot;Ciutat Vella&quot; ...
+##  $ CodiBarri        : num  1 2 3 4 5 6 7 8 9 10 ...
+##  $ NomBarri         : chr  &quot;el Raval&quot; &quot;el Barri Gòtic&quot; &quot;la Barceloneta&quot; &quot;Sant Pere, Santa Caterina i la Ribera&quot; ...
+##  $ Poblacio16_64anys: num  36365 12882 10857 16714 21782 ...
+##  $ PesAtur          : num  13.9 11.7 14 12.6 9.1 9.4 7.8 9 9.1 10.2 ...</code></pre>
+<pre class="r"><code>summary(datafromcsv)</code></pre>
+<pre><code>##       Any            Mes         CodiDistricte    NomDistricte      
+##  Min.   :2012   Min.   : 1.000   Min.   : 1.000   Length:8103       
+##  1st Qu.:2014   1st Qu.: 3.000   1st Qu.: 4.000   Class :character  
+##  Median :2016   Median : 6.000   Median : 7.000   Mode  :character  
+##  Mean   :2016   Mean   : 6.378   Mean   : 6.247                     
+##  3rd Qu.:2018   3rd Qu.: 9.000   3rd Qu.: 8.000                     
+##  Max.   :2021   Max.   :12.000   Max.   :10.000                     
+##    CodiBarri    NomBarri         Poblacio16_64anys    PesAtur      
+##  Min.   : 1   Length:8103        Min.   :  257     Min.   : 2.700  
+##  1st Qu.:19   Class :character   1st Qu.: 6928     1st Qu.: 6.700  
+##  Median :37   Mode  :character   Median :13873     Median : 8.600  
+##  Mean   :37                      Mean   :14552     Mean   : 8.987  
+##  3rd Qu.:55                      3rd Qu.:19909     3rd Qu.:10.800  
+##  Max.   :73                      Max.   :38628     Max.   :21.800</code></pre>
+<pre class="r"><code>head(datafromcsv)</code></pre>
+<pre><code>##    Any Mes CodiDistricte NomDistricte CodiBarri
+## 1 2012   1             1 Ciutat Vella         1
+## 2 2012   1             1 Ciutat Vella         2
+## 3 2012   1             1 Ciutat Vella         3
+## 4 2012   1             1 Ciutat Vella         4
+## 5 2012   1             2     Eixample         5
+## 6 2012   1             2     Eixample         6
+##                                NomBarri Poblacio16_64anys PesAtur
+## 1                              el Raval             36365    13.9
+## 2                        el Barri Gòtic             12882    11.7
+## 3                        la Barceloneta             10857    14.0
+## 4 Sant Pere, Santa Caterina i la Ribera             16714    12.6
+## 5                         el Fort Pienc             21782     9.1
+## 6                    la Sagrada Família             34838     9.4</code></pre>
+<p>Filtratge de les dades per quedar-nos amb els valors numèrics que ens interessen.</p>
+<pre class="r"><code>numericData &lt;- datafromcsv %&gt;% select(is.numeric)
+numericData2019 &lt;- atur2019 %&gt;% select(is.numeric)
+numericRows =dim(numericData)[1]</code></pre>
+<pre class="r"><code>b &lt;- boxplot(PesAtur ~ CodiDistricte, data = numericData2019)</code></pre>
+<p><img src="data:image/png;base64,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drLeXp/Z7QWpw35rM9NNQN+cki8bH5wObyG/eJO2m58GzY7N0UdsnwnoAwLa0qu2H0N6oOHTxbsF3e8V/RfNzpvnRw/VG7/F2/4ixqNvJ/iy5VOd21dan3zSLGgCOpYeAT18I0Lz9ynuNGvO/ZWT/QLa7rw5fhu58dnZ7qfArW4X/Fx9+a/7fO4f6zZbAt6FH0uHgN48ver3MYpmNTj5Yowujwjape1Ft4D2eQZ/fIVmhyPT4kL6G64DHUv7gH7WqTW3NhXQdg88js/Ots3p8DHE7k92231ewyeRxtI8oC96vPz58EN2jZrTK6BHd6bhC7r7rN0d+LYPbzo8JOzzWO3oJ0G76wqOTkifhR9A64DuV9o77b9Oe7++2l/5c6/tC1L3aWt68exh7NfnZNP3XRo+27337f0H0BpeUnB/TcSrdl+pfXxC+jam+hoHtMcl1NdvLpP6pPW153c6XEh/uDNtv0P1EJ3DV7V+1/g1li7Xedxeodn2otYXb75B9fCuaKtJjnfX7bfp+j7Quhov74dPe9vV4NXRL8Fo/yVDjd8SPfqq+JZlOzo2LZ8edvkSmeNfgtLugo+jWZqdNA9OSN9IX17bgB7/DoSmAT36LHSHN/xbX1Py7e2dafurcP52G+qGH3/s9fLd/UprOdndKnu32ctSD0/Iv/mdSMW1DejxA4O2Ab39fYldfn9h84vyrt788sd/Np3l+rs/Hq5q/Plfmk7S64tHv/rlze+vbHtnrg57rOnXDJ6ckH4rJ8DGCShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKECQgAIECShAkIACBAkoQJCAAgQJKEDQ/wevmfVccakz+gAAAABJRU5ErkJggg==" width="672" /></p>
+</div>
+<div id="tasques-de-neteja" class="section level2" number="5.4">
+<h2 number="5.4"><span class="header-section-number">5.4</span> Tasques de neteja</h2>
+</div>
 </div>
 
 

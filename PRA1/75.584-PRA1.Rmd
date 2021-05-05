@@ -128,5 +128,70 @@ El joc de dades ha de tenir com a mínim 100 observacions i ha de ser diferent d
   
 
 ******
-
+# Estudi Analític
 ******
+
+## Plantejament del problema analític.
+
+## Justificació de la selecció de dades. 
+
+## Anàlisi exploratiu de les dades.
+
+Càrrega de les llibreries.
+
+```{r message= FALSE, warning=FALSE}
+
+# https://cran.r-project.org/web/packages/ggplot2/index.html
+if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
+
+# https://cran.r-project.org/web/packages/dplyr/index.html
+if (!require('dplyr')) install.packages('dplyr'); library('dplyr')
+
+if (!require(cluster)) install.packages(cluster);library(cluster)
+if(!require(MVA)) install.packages("MVA"); library(MVA)
+if(!require(tidyr)) install.packages("tidyr");library(tidyr)
+if(!require(cluster)) install.packages("cluster"); library(cluster)
+if(!require(plyr)) install.packages("plyr"); library(plyr)
+if(!require(readr)) install.packages("readr"); library(readr)
+
+```
+
+
+Càrrega de les dades.
+```{r message= FALSE, warning=FALSE}
+#https://datascienceplus.com/how-to-import-multiple-csv-files-simultaneously-in-r-and-create-a-data-frame/
+mycsvfiles = list.files(pattern="*.csv", full.names=TRUE)
+mycsvfiles
+datafromcsv = ldply(mycsvfiles, read_csv)
+colnames(datafromcsv) <- c("Any", "Mes", "CodiDistricte", "NomDistricte", "CodiBarri", "NomBarri", "Poblacio16_64anys", "PesAtur")
+
+#Only Atur2019
+atur2019<-read.csv("2019_atur.csv", header = T, sep=",")
+colnames(atur2019) <- c("Any", "Mes", "CodiDistricte", "NomDistricte", "CodiBarri", "NomBarri", "Poblacio16_64anys", "PesAtur")
+```
+
+Anàlisi de l'estructura i forma de les dades.
+```{r message= FALSE, warning=FALSE}
+str(datafromcsv)
+summary(datafromcsv)
+head(datafromcsv)
+```
+
+Filtratge de les dades per quedar-nos amb els valors numèrics que ens interessen.
+```{r message= FALSE, warning=FALSE}
+numericData <- datafromcsv %>% select(is.numeric)
+numericData2019 <- atur2019 %>% select(is.numeric)
+numericRows =dim(numericData)[1]
+```
+
+
+```{r message= FALSE, warning=FALSE}
+b <- boxplot(PesAtur ~ CodiDistricte, data = numericData2019)
+
+```
+
+```{r message= FALSE, warning=FALSE}
+
+```
+## Tasques de neteja
+
