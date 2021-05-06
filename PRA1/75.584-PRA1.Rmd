@@ -131,11 +131,35 @@ El joc de dades ha de tenir com a mínim 100 observacions i ha de ser diferent d
 # Estudi Analític
 ******
 
-## Plantejament del problema analític.
+## - Plantejament del problema analític i justificació de la selecció de dades. 
 
-## Justificació de la selecció de dades. 
+El problema analític que volem plantejar en aquest estudi, inicialment no es trobava focalitzat en cap àmbit concret, simplement tenia la intenció de treballar amb dades de la ciutat de Barcelona, i que mitjançant aquestes poder extreure nous punts de vista i nova informació no fàcilment visible.
 
-## Anàlisi exploratiu de les dades.
+El principal interès d'aquesta investigació era la de poder ajudar a les institucions a prendre decisions que afavorissin a la ciutadania. És per això que quan vaig observar que hi havia una Dataset que disposava de la informació de les persones aturades de Barcelona, i a la vegada, separada per barris, em vaig decidir per aquest. Crec que l'anàlisi d'aquestes dades pot aportar noves solucions per a les persones que no disposen d'una feina.
+
+## - Anàlisi exploratiu de les dades.
+
+Les dades seleccionades i que farem servir per a realitzar aquest estudi analític es troben disponible a la plataforma Open Data BCN mitjançant el següent enllaç.
+
+[https://opendata-ajuntament.barcelona.cat/data/ca/dataset/est-atur-pes](https://opendata-ajuntament.barcelona.cat/data/ca/dataset/est-atur-pesx)
+
+L'Open Data BCN es tracta d'un portal que ofereix dades de caràcter públic de diferents àmbits, sectors i interessos relacionades amb la ciutat de Barcelona. Aquesta plataforma ens aporta dades fàcilment descarregables en diferents tipus de fitxers i formats per a ser utilitzades. En el nostre cas ens trobem que les dades de l'atur de Barcelona es troben dividies en fitxers CSV que representen un any natural entre el 2012 i l'actual 2021. La granularitat de les dades en el seu interior serà mensual per a cada un dels barris de la ciutat de Barcelona.
+
+A continuació ens mostrem de forma visual quins són els paràmetres rebuts al Data Set, que signifiquen i de quin tipus són.
+
+|     Variable     |                    Description                         |  Type   |
+|----------------- | -------------------------------------------------------| --------|
+|Any               | Any del registre                                       | Numèric |
+|Mes               | Mes del registre                                       | Numeric |
+|CodiDistrict      | ID del districte                                       | Numeric |
+|NomDistrict       | Nom del districte                                      | String  |
+|CodiBarri         | ID del barri                                           | Numeric |
+|NomBarri          | Nom del barri                                          | String  |
+|Poblacio16_64anys | Població entre 16 i 64 anys                            | Numeric |
+|PesAtur           | Percentatge atur dins la població d'entre 16 i 64 anys | Numeric |
+|                  |                                                        |         |
+
+Seguidament passarem a carregar les llibreries que utilitzarem al llarg de l'estudi i també carregarem les dades.
 
 Càrrega de les llibreries.
 
@@ -156,10 +180,12 @@ if(!require(readr)) install.packages("readr"); library(readr)
 
 ```
 
-
 Càrrega de les dades.
+
 ```{r message= FALSE, warning=FALSE}
 #https://datascienceplus.com/how-to-import-multiple-csv-files-simultaneously-in-r-and-create-a-data-frame/
+
+#All files
 mycsvfiles = list.files(pattern="*.csv", full.names=TRUE)
 mycsvfiles
 datafromcsv = ldply(mycsvfiles, read_csv)
@@ -170,28 +196,134 @@ atur2019<-read.csv("2019_atur.csv", header = T, sep=",")
 colnames(atur2019) <- c("Any", "Mes", "CodiDistricte", "NomDistricte", "CodiBarri", "NomBarri", "Poblacio16_64anys", "PesAtur")
 ```
 
-Anàlisi de l'estructura i forma de les dades.
+Podem observar que per un costat carreguem les dades de l'atur del 2019, mentre que per l'altre, carreguem totes les dades que trobem en tots els fitxers CSV en el nostre directori. Això és degut al fet que desitgem crear un Dataset que contingui totes les dades de l'atur per barri a la ciutat de Barcelona contingut entre els anys 2012 i 2021, mentre que en l'altre cas volem les dades concretes d'un any per poder fer un estudi més concret en un període més curt de temps.
+
+A continuació mostrem l'estructura de les dades i algunes estadístiques bàsiques d'aquestes, així com una petita mostra dels valors.
+
 ```{r message= FALSE, warning=FALSE}
 str(datafromcsv)
 summary(datafromcsv)
 head(datafromcsv)
 ```
 
+## - Tasques de neteja.
+
+En aquest apartat ens focalitzarem en determinar quins són els atributs que són realment necessaris per a executar el nostre projecte.
+
+Algunes vegades podem trobar que certs paràmetres són redundants entre ells, és a dir, que ens aporten la mateixa informació, i per tant no té sentit mantenir-los. En el nostre cas ens trobem que els camps _NomBarri_ i _NomDistricte_ són redundants, ja que ens aporten una informació que de cara a l'estudi és irrellevant, així com que aquests ja disposen d'un identificador ( _CodiBarri_ i _CodiDistricte_ respectivament) que fan aquesta funció. A la vegada, aquests atributs són de tipus numèrics, fet que ens facilitaran la feina a l'hora de treballar i no haurem de realitzar cap transformació dels paràmetres en format de caràcters a numèric.
+
 Filtratge de les dades per quedar-nos amb els valors numèrics que ens interessen.
 ```{r message= FALSE, warning=FALSE}
+#Grab only numeric values
+#src: https://datascienceplus.com/how-to-import-multiple-csv-files-simultaneously-in-r-and-create-a-data-frame/
 numericData <- datafromcsv %>% select(is.numeric)
 numericData2019 <- atur2019 %>% select(is.numeric)
+
+#Get the number of fields
+numericNCols = ncol(numericData)
+numericNCols
+
+#Get the fields
+numericFields = colnames(numericData)
+numericFields
+
+#Get the number of entries
 numericRows = dim(numericData)[1]
+numericRows
 ```
 
+Un cop obtingut el DataFrame amb els paràmetres exclusivament necessari, comprovarem si tenim valors buits.
 
 ```{r message= FALSE, warning=FALSE}
-# b <- boxplot(PesAtur ~ CodiDistricte, data = numericData2019)
-b <- boxplot( numericData2019[])
+#Get NA fields
+colSums(is.na(numericData)) 
+
+colSums(is.na(numericData2019))
 ```
+
+Un cop hem comprovat que no disposem de valors buits, podrem passar al següent apartat de l'anàlisi.
+
+## - Anàlisi de les dades
+
+Un primer pas per on podem començar aplicant a les nostres dades són __mètodes d'agregació__. D'aquesta manera podrem tenir una primera visió de dividir i detectar els objectes semblants dins del nostre domini o conjunt d'observacions. 
+
+És per això que té molt de sentit aplicar un criteri com el de _Calinski-Harabasz_ per tal que mitjançant l'execució de l'algorisme _kmeans_ sobre el nostre conjunt de dades, ens determini quin podria ser el valor __k__ adient per tal de realitzar la nostra clusterització de dades.
+
+Carreguem les llibreries per a elaborar aquesta anàlisi.
+```{r message= FALSE, warning=FALSE}
+if(!require(fpc)) install.packages(fpc); library(fpc)
+if(!require(class)) install.packages(class); library(class)
+```
+
+A continuació determinem que el rang sobre el qual volem trobar el millor valor __k__ és entre 1 i 73, on 73 correspon el nombre de barris que disposem dins de la ciutat de Barcelona.
 
 ```{r message= FALSE, warning=FALSE}
-
+#Calinski-Harabasz criterion computation
+fit_ch  <- kmeansruns(numericData2019, krange = 1:73, criterion = "ch")
+print(fit_ch$bestk)
 ```
-## Tasques de neteja
+_Warning: Aquest valor és variable degut al fet que ens trobem executant l'algorisme kmeans que té un factor aleatori._
 
+Tot i el que hem matisat anteriorment, el valor que més s'ha repetit durant el llarg de les execucions és 73. Així doncs, podem determinar que el comportament de semblança es troba bastant lligat a la quantitat dels barris, és a dir, a cada un dels barris.
+
+A continuació mostrem de forma visual les relacions entre parells de característiques, que trobem en els nostres clústers, forçant que el nombre de clústers és 73, el valor majoritari respecte el criteri de _Calinski-Harabasz_.
+
+```{r message= FALSE, warning=FALSE}
+#cl3 <- kmeans(numericData2019, fit_ch$bestk) #Also a possible way to do it
+
+cl3 <- kmeans(numericData2019, 73)
+with(numericData2019, pairs(numericData2019, col=c(1:6)[cl3$cluster]))
+```
+
+És a través d'aquest primer gràfic que podem començar a trobar i a veure punts interessants d'anàlisi i relació.
+
+### - Proporció de les persones aturades
+
+El primer element que podem tenir en compte, és l'anàlisi de la quantitat de persones que es troben a l'atur respecte al total de persones que ja es troben en edat de poder treballar, per a cada un dels barris o districtes de Barcelona.
+Aquest anàlisi el podem realitzar per a un districte o barri concreta, igual que en diferents períodes temporals.
+
+En el nostre cas elaborarem l'anàlisi de la proporció de persones aturades que formen part del districte numero 1, durant l'any 2019.
+
+```{r message= FALSE, warning=FALSE}
+#Filter the value with 'CodiDistricte' equals 1
+districte1 <- numericData2019 %>% filter(CodiDistricte == 1)
+
+#Computation of the mean value for the fields 'Poblacio16_64anys' and 'PesAtur'
+meanPoblacio1 <- mean(numericData2019$Poblacio16_64anys)
+meanAtur1 <- mean(numericData2019$PesAtur)
+
+#Graph
+#ggplot(data = numericData2019, aes(y=meanPoblacio1, fill=meanAtur1)) + geom_bar(position="fill")+facet_wrap(~CodiDistricte) #not working :( 
+```
+
+### - Fluctuació de l'atur
+
+Un altre element que podem visualitzar de forma clara i que pot ser molt interessant de tractar, és la fluctuació de l'atur al llarg del temps.
+A través d'aquesta anàlisi podem veure quin és el segment de valors sobre el que s'ha anat movent l'atur en un període concret en un barri i/o districte determinat.
+
+Aquest anàlisi el podem realitzar a diferents escales. És a dir, aquest estudi el podem realitzar més o menys focalitzat segons ens interessi per a un cas concret.
+Exemples possibles d'anàlisi en les dimensions temporals i espacials:
+
+* Anàlisi per barris.
+* Anàlisi per districtes. 
+* Anàlisi anual.
+* Anàlisi mensual. 
+
+A continuació podrem visualitzar la representació gràfica els segments sobre els quals es mou l'atur a la ciutat de Barcelona entre els anys 2012 i 2021, fent una separació espacial pels 10 districtes.
+
+```{r message= FALSE, warning=FALSE}
+b <- boxplot(PesAtur ~ CodiDistricte, data = numericData, xlab = "Pes Atur", ylab = "Nº Districte", horizontal=TRUE)
+grid(nx=16, ny=16)
+```
+
+En aquesta representació podem veure de quin a quin valor s'ha mogut, el valor mitjà, els diferents quartils, així com a diferents outliers.
+
+
+### - Barris més i menys castigats
+
+Finalment, un altre possible estudi, és el de trobar quins són aquells punts on aquests valors, en aquest cas els de l'atur, són més extrems.
+És per això que un altre punt d'anàlisi, és el càlcul dels punts on el registre mitjà d'atur és major i en quins és menor.
+
+### - Passos futurs 
+
+L'evolució d'aquest estudi seria molt interessant de què fos aprofitat a llarg termini. És per això que un dels passos futurs a realitzar en aquest estudi, és el d'aplicar mètodes de regressió i predictius, per tal que donades unes quantitats de població, puguem anticipar quins seran els valors d'atur a cada un dels punts de Barcelona. L'ús d'aquestes prediccions podria ser la implementació de polítiques de caràcter social, per tal d'ajudar de forma més focalitzada a aquestes persones que no disposen de feina.

@@ -1,4 +1,4 @@
-# https://cran.r-project.org/web/packages/ggplot2/index.html
+#https://cran.r-project.org/web/packages/ggplot2/index.html
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
 
 # https://cran.r-project.org/web/packages/dplyr/index.html
@@ -72,7 +72,19 @@ for (i in c(2,3,4,5,6,7,8,9,10))
   sk            <- silhouette(y_cluster, d)
   resultados[i] <- mean(sk[,3])
 }
-#plot(2:10,resultados[2:10],type="o",col="blue",pch=0,xlab="N� of clusters",ylab="Silhouette")
+
+districtes <- rep(0,10)
+for (i in 10){
+  districtes[i] <- numericData2019 %>% filter(CodiDistricte == i)
+}
+a <- districtes[1]
+
+districte1 <- numericData2019 %>% filter(CodiDistricte == 1)
+meanPoblacio1 <- mean(numericData2019$Poblacio16_64anys)
+meanAtur1 <- mean(numericData2019$PesAtur)
+
+ggplot(data = districte1, aes(x= CodiDistricte, y=Poblacio16_64anys, fill=PesAtur)) + geom_bar(position="fill")
+
 
 #k=3
 #clusters molt sobreposats
@@ -106,15 +118,12 @@ if(!require(class)) install.packages(class); library(class)
 #   aes(shape = Mes, color = Mes)
 # )
 #
-b <- boxplot(PesAtur ~ CodiDistricte, data = numericData2019)
+# b <- boxplot(PesAtur ~ CodiDistricte, data = numericData2019, xlab = "Pes Atur", ylab = "Nº Districte", horizontal=TRUE) 
+# grid(nx=16, ny=16)
 
-
-b + geom_jitter(
-  aes(shape = pesAtur, color=pesAtur),
-  position = position_jitter(0.2),
-  size = 1.2
-) 
+#gplot(data=numericData[1:numericRows,], aes(y=Poblacio16_64anys, fill=PesAtur)) + geom_bar(position="fill")+facet_wrap(~CodiDistricte)
 
 
 
+# mean2019 <- lapply(numericData2019, function(numericData2019){numericData$PesAtur})
 #stripchart(numericData2019$PesAtur ~ numericData2019$CodiDistricte, vertical = TRUE, method = "jitter", pch = 10, add = TRUE, col = 1:length(levels(numericData2019$CodiDistricte)))
