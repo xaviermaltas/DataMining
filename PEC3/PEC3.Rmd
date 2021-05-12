@@ -1,5 +1,3 @@
-
-
 ---
 title: 'Mineria de dades: PEC3 - Classificació amb arbres de decisió'
 author: "Autor: Jordi Escayola Mansilla"
