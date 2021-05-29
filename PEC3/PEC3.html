@@ -551,7 +551,7 @@ summary(model)</code></pre>
 ## C5.0.default(x = trainX, y = trainy, rules = TRUE)
 ## 
 ## 
-## C5.0 [Release 2.07 GPL Edition]      Mon May 03 09:45:42 2021
+## C5.0 [Release 2.07 GPL Edition]      Sat May 29 16:41:04 2021
 ## -------------------------------
 ## 
 ## Class specified by attribute `outcome&#39;
@@ -739,6 +739,98 @@ importancia_usage</code></pre>
 <p>Els alumnes han de completar aquí els següents punts que fan referència als apartats de la rúbrica.</p>
 <div id="estudi-de-les-dades-dentrada" class="section level2" number="3.1">
 <h2 number="3.1"><span class="header-section-number">3.1</span> Estudi de les dades d’entrada</h2>
+<p>Inicialment carregem les dades amb les que treballarem per a realitzar aquest estudi.</p>
+<pre class="r"><code>#Loading the data
+data&lt;-read.csv(&quot;./credit_kaggle.csv&quot;,header=T,sep=&quot;,&quot;)
+attach(data)</code></pre>
+<p>A continuació realitzem un anàlisi de l’estat inicial de les dades i quins tipus d’atributs tenim.</p>
+<ul>
+<li><p>Obtenció del nombre de registres i variables.</p>
+<ul>
+<li>1000 registres</li>
+<li>21 variables</li>
+</ul></li>
+</ul>
+<pre class="r"><code>dim(data)</code></pre>
+<pre><code>## [1] 1000   21</code></pre>
+<ul>
+<li>Anàlisi del tipus de variables que ens trobem dins el nostre dataset per cada un del registres.</li>
+</ul>
+<pre class="r"><code>str(data)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    1000 obs. of  21 variables:
+##  $ checking_balance    : chr  &quot;&lt; 0 DM&quot; &quot;1 - 200 DM&quot; &quot;unknown&quot; &quot;&lt; 0 DM&quot; ...
+##  $ months_loan_duration: int  6 48 12 42 24 36 24 36 12 30 ...
+##  $ credit_history      : chr  &quot;critical&quot; &quot;repaid&quot; &quot;critical&quot; &quot;repaid&quot; ...
+##  $ purpose             : chr  &quot;radio/tv&quot; &quot;radio/tv&quot; &quot;education&quot; &quot;furniture&quot; ...
+##  $ amount              : int  1169 5951 2096 7882 4870 9055 2835 6948 3059 5234 ...
+##  $ savings_balance     : chr  &quot;unknown&quot; &quot;&lt; 100 DM&quot; &quot;&lt; 100 DM&quot; &quot;&lt; 100 DM&quot; ...
+##  $ employment_length   : chr  &quot;&gt; 7 yrs&quot; &quot;1 - 4 yrs&quot; &quot;4 - 7 yrs&quot; &quot;4 - 7 yrs&quot; ...
+##  $ installment_rate    : int  4 2 2 2 3 2 3 2 2 4 ...
+##  $ personal_status     : chr  &quot;single male&quot; &quot;female&quot; &quot;single male&quot; &quot;single male&quot; ...
+##  $ other_debtors       : chr  &quot;none&quot; &quot;none&quot; &quot;none&quot; &quot;guarantor&quot; ...
+##  $ residence_history   : int  4 2 3 4 4 4 4 2 4 2 ...
+##  $ property            : chr  &quot;real estate&quot; &quot;real estate&quot; &quot;real estate&quot; &quot;building society savings&quot; ...
+##  $ age                 : int  67 22 49 45 53 35 53 35 61 28 ...
+##  $ installment_plan    : chr  &quot;none&quot; &quot;none&quot; &quot;none&quot; &quot;none&quot; ...
+##  $ housing             : chr  &quot;own&quot; &quot;own&quot; &quot;own&quot; &quot;for free&quot; ...
+##  $ existing_credits    : int  2 1 1 1 2 1 1 1 1 2 ...
+##  $ default             : int  1 2 1 1 2 1 1 1 1 2 ...
+##  $ dependents          : int  1 1 2 2 2 2 1 1 1 1 ...
+##  $ telephone           : chr  &quot;yes&quot; &quot;none&quot; &quot;none&quot; &quot;none&quot; ...
+##  $ foreign_worker      : chr  &quot;yes&quot; &quot;yes&quot; &quot;yes&quot; &quot;yes&quot; ...
+##  $ job                 : chr  &quot;skilled employee&quot; &quot;skilled employee&quot; &quot;unskilled resident&quot; &quot;skilled employee&quot; ...</code></pre>
+<ul>
+<li>Estadisitiques bàsiques de la mostra de dades.</li>
+</ul>
+<pre class="r"><code>summary(data)</code></pre>
+<pre><code>##  checking_balance   months_loan_duration credit_history       purpose         
+##  Length:1000        Min.   : 4.0         Length:1000        Length:1000       
+##  Class :character   1st Qu.:12.0         Class :character   Class :character  
+##  Mode  :character   Median :18.0         Mode  :character   Mode  :character  
+##                     Mean   :20.9                                              
+##                     3rd Qu.:24.0                                              
+##                     Max.   :72.0                                              
+##      amount      savings_balance    employment_length  installment_rate
+##  Min.   :  250   Length:1000        Length:1000        Min.   :1.000   
+##  1st Qu.: 1366   Class :character   Class :character   1st Qu.:2.000   
+##  Median : 2320   Mode  :character   Mode  :character   Median :3.000   
+##  Mean   : 3271                                         Mean   :2.973   
+##  3rd Qu.: 3972                                         3rd Qu.:4.000   
+##  Max.   :18424                                         Max.   :4.000   
+##  personal_status    other_debtors      residence_history   property        
+##  Length:1000        Length:1000        Min.   :1.000     Length:1000       
+##  Class :character   Class :character   1st Qu.:2.000     Class :character  
+##  Mode  :character   Mode  :character   Median :3.000     Mode  :character  
+##                                        Mean   :2.845                       
+##                                        3rd Qu.:4.000                       
+##                                        Max.   :4.000                       
+##       age        installment_plan     housing          existing_credits
+##  Min.   :19.00   Length:1000        Length:1000        Min.   :1.000   
+##  1st Qu.:27.00   Class :character   Class :character   1st Qu.:1.000   
+##  Median :33.00   Mode  :character   Mode  :character   Median :1.000   
+##  Mean   :35.55                                         Mean   :1.407   
+##  3rd Qu.:42.00                                         3rd Qu.:2.000   
+##  Max.   :75.00                                         Max.   :4.000   
+##     default      dependents     telephone         foreign_worker    
+##  Min.   :1.0   Min.   :1.000   Length:1000        Length:1000       
+##  1st Qu.:1.0   1st Qu.:1.000   Class :character   Class :character  
+##  Median :1.0   Median :1.000   Mode  :character   Mode  :character  
+##  Mean   :1.3   Mean   :1.155                                        
+##  3rd Qu.:2.0   3rd Qu.:1.000                                        
+##  Max.   :2.0   Max.   :2.000                                        
+##      job           
+##  Length:1000       
+##  Class :character  
+##  Mode  :character  
+##                    
+##                    
+## </code></pre>
+<ul>
+<li>Observem si dins les fonts de dades disposem de valors nulls.</li>
+</ul>
+<pre class="r"><code>missing &lt;- data[is.na(data),]
+dim(missing)</code></pre>
+<pre><code>## [1]  0 21</code></pre>
 </div>
 <div id="anàlisi-descriptiva-i-de-correlacions" class="section level2" number="3.2">
 <h2 number="3.2"><span class="header-section-number">3.2</span> Anàlisi descriptiva i de correlacions</h2>

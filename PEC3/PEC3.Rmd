@@ -435,6 +435,53 @@ Els alumnes han de completar aquí els següents punts que fan referència als a
 
 ## Estudi de les dades d'entrada
 
+Inicialment carregem les dades amb les que treballarem per a realitzar aquest estudi.
+
+```{r message= FALSE, warning=FALSE}
+#Loading the data
+data<-read.csv("./credit_kaggle.csv",header=T,sep=",")
+attach(data)
+```
+
+A continuació realitzem un anàlisi de l'estat inicial de les dades i quins tipus d'atributs tenim.
+
+* Obtenció del nombre de registres i variables. 
+
+  + 1000 registres
+  + 21 variables
+
+```{r message= FALSE, warning=FALSE}
+dim(data)
+```
+
+* Anàlisi del tipus de variables que ens trobem dins el nostre dataset per cada un del registres.
+
+```{r message= FALSE, warning=FALSE}
+str(data)
+```
+
+* Estadisitiques bàsiques de la mostra de dades.
+
+```{r message= FALSE, warning=FALSE}
+summary(data)
+```
+
+* Observem si dins les fonts de dades disposem de valors nulls.
+
+```{r message= FALSE, warning=FALSE}
+missing <- data[is.na(data),]
+dim(missing)
+```
+
+
+```{r message= FALSE, warning=FALSE}
+
+```
+
+
+```{r message= FALSE, warning=FALSE}
+
+```
 
 ## Anàlisi descriptiva i de correlacions
 
