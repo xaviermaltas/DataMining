@@ -23,10 +23,26 @@ if(!require(C50)){
 }
 
 dim(data)
-
 str(data)
-
 summary(data)
 
-missing <- data[is.na(data),]
-dim(missing)
+#Amount
+Amount=data['amount']
+d <- density(data$amount)
+plot(d, main="Credit amount distribution")
+polygon(d, col="red", border ="black")
+
+amount <- data$amount
+h <- hist(amount, breaks = 50, col="red", xlab="DM", main="Credit amount")
+
+#Purpose
+Purpose = data['purpose']
+grid.newpage()
+plotByPurpose<-ggplot(data, aes(purpose))+geom_bar() +labs(x="Purpose", y="Count") + geom_text(stat='count', aes(label=..count..), vjust=-1)
+grid.arrange(plotByPurpose)
+
+#Major purposes
+topPurposeNames <- c("car (new)", "car (used)", "business", "furniture", "radio/tv")
+topPurpose=subset(data, purpose %in% topPurposeNames)
+
+ggplot(topPurpose, aes(x = amount)) + geom_histogram(aes(color = purpose), fill = "white", position = "identity", bins = 30)

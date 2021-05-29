@@ -431,11 +431,11 @@ Curiosament i encara que el conjunt de dades és molt senzill, s'aprecien difer�
 
 # Solució de l'exercici
 
-Els alumnes han de completar aquí els següents punts que fan referència als apartats de la rúbrica.
+En aquest estudi utilitzarem algorismes de classificació, concretament arbres de dedició, per tal d'analitzar un conjunt de dades relacionades amb els impagaments de préstecs i poder predir si un sol·licitant podrà retornar un crèdit o no d'acord un conjunt d'atributs.
 
 ## Estudi de les dades d'entrada
 
-Inicialment carregem les dades amb les que treballarem per a realitzar aquest estudi.
+El primer pas a realitzar en aquest estudi és el de carregar les dades i fer petit anàlisi d'aquestes.
 
 ```{r message= FALSE, warning=FALSE}
 #Loading the data
@@ -447,18 +447,40 @@ A continuació realitzem un anàlisi de l'estat inicial de les dades i quins tip
 
 * Obtenció del nombre de registres i variables. 
 
-  + 1000 registres
-  + 21 variables
-
 ```{r message= FALSE, warning=FALSE}
 dim(data)
 ```
+Podem observar que el conjunt de dades disposa de *1000 registres* i *21 variables* cada un d'ells.
 
 * Anàlisi del tipus de variables que ens trobem dins el nostre dataset per cada un del registres.
 
 ```{r message= FALSE, warning=FALSE}
 str(data)
 ```
+
+Seguidament farem una petita descripció de cada un dels camps i que representen. 
+
+1.  __Checking balance__ : (_String_ ) - Rang del balanç de comprovació. En DM (Deutsche Mark).
+2.  __Months load duration__ : ( _Int_ ) - Duració del crèdit.
+3.  __Credit history__ : (_String_ ) - Historial de retorn de crèdits.
+4.  __Purpose__ : (_String_ ) - Motiu del crèdit.
+5.  __Amount__ : ( _Int_ ) - Quantitat del préstec.
+6.  __Savings balance__ : (_String_ ) - Diners estalviats.
+7.  __Employment length__ : (_String_ ) - Duració de l'ocupació.
+8.  __Installment rate__ : ( _Int_ ) - Cost de cada quota.
+9.  __Personal status__ : (_String_ ) - Estat civil. 
+10.  __Other debtors__ : (_String_ ) - Indica si hi ha altres deutors.
+11.  __Residence history__ : ( _Int_ ) - Historial de residencies.
+12.  __Property__ : (_String_ ) - Propietats.
+13.  __Age__ : ( _Int_ ) - Edat.
+14.  __Installment plan__ : (_String_ ) - Indica si hi ha un pla de pagament fraccionat.
+15.  __Housing__ : (_String_ ) - Habitatge. 
+16.  __Existing credits__ : ( _Int_ ) - Disposa d'altres crèdits. 
+17.  __Default__ : ( _Int_ ) - Impagament de crèdits.
+18.  __Dependents__ : ( _Int_ ) - Disposa de persones de confiança. 
+19.  __Telephone__ : (_String_ ) - Indica si té o no telèfon. 
+20.  __Foreign worker__ : (_String_ ) - És o no treballador estranger.
+21.  __Job__ : (_String_ ) - Tipus de feina/treballador.
 
 * Estadisitiques bàsiques de la mostra de dades.
 
@@ -469,23 +491,63 @@ summary(data)
 * Observem si dins les fonts de dades disposem de valors nulls.
 
 ```{r message= FALSE, warning=FALSE}
+#Collecting null values
 missing <- data[is.na(data),]
 dim(missing)
 ```
 
+Podem observar que no tenim valors NULL.
 
-```{r message= FALSE, warning=FALSE}
-
-```
-
-
-```{r message= FALSE, warning=FALSE}
-
-```
 
 ## Anàlisi descriptiva i de correlacions
 
+En aquest apartat elaborarem un anàlisi de certes variables de forma visual per tal de començar a observar certes correlacions entre diferents camps.
 
+* __Amount__
+
+El primer cap que analitzarem és el de _amount_ que representa el valor del préstec. L'anàlisi d'aquest en permetrà veure quina és la distribució de la quantitat demanada dins els diferents préstecs enregistrats a la mostra de dades.
+
+```{r message= FALSE, warning=FALSE}
+#Collecting 'amount' field data.
+Amount=data['amount']
+
+#Creating a density plot
+d <- density(data$amount)
+plot(d, main="Credit amount distribution")
+polygon(d, col="red", border ="black")
+
+#Creating a histogram
+amount <- data$amount
+h <- hist(amount, breaks = 50, col="red", xlab="DM", main="Credit amount histogram")
+```
+
+Un cop observats els anteriors gràfics, podem veure que majoritàriament els préstecs són de quantitats no molt elevades, és més, tal com ens indica el primer gràfic, aquests acostumen a moure's pel voltant dels 450 DM.
+
+*__Purpose__
+
+A continuació farem un anàlisi del motiu del préstec. Això ens portarà entendre les necessitats de les persones que realitzaven el crèdit i també relacionar-ho amb les quantitats demanades.
+
+```{r message= FALSE, warning=FALSE}
+#Collecting 'purpose' field.
+Purpose = data['purpose']
+
+#Creating a new grid
+grid.newpage()
+#byPurpose plot
+plotByPurpose<-ggplot(data, aes(purpose))+geom_bar() +labs(x="Purpose", y="Count") + geom_text(stat='count', aes(label=..count..), vjust=-1)
+grid.arrange(plotByPurpose)
+```
+
+Observant l'histograma anterior, podem determinar que tenim principalment 4 motius majoritaris que porten a la gent a demanar un crèdit. Aquests són:
+
+1. Radio/TV
+2. Cotxe (ja sigui nou o de segona ma)
+3. Mobles
+4. Negocis
+
+```{r message= FALSE, warning=FALSE}
+
+```
 ## Primer arbre de decisió
 
 
