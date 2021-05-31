@@ -519,11 +519,16 @@ polygon(d, col="red", border ="black")
 #Creating a histogram
 amount <- data$amount
 h <- hist(amount, breaks = 50, col="red", xlab="DM", main="Credit amount histogram")
+
+#Mean computation
+mean(amount)
 ```
 
-Un cop observats els anteriors gràfics, podem veure que majoritàriament els préstecs són de quantitats no molt elevades, és més, tal com ens indica el primer gràfic, aquests acostumen a moure's pel voltant dels 450 DM.
+Un cop observats els anteriors gràfics, podem veure que majoritàriament els préstecs són de quantitats no molt elevades, és més, tal com ens indica el primer gràfic, aquests acostumen a moure's pel voltant dels 3500 DM.
 
-*__Purpose__
+
+
+* __Purpose__
 
 A continuació farem un anàlisi del motiu del préstec. Això ens portarà entendre les necessitats de les persones que realitzaven el crèdit i també relacionar-ho amb les quantitats demanades.
 
@@ -538,29 +543,154 @@ plotByPurpose<-ggplot(data, aes(purpose))+geom_bar() +labs(x="Purpose", y="Count
 grid.arrange(plotByPurpose)
 ```
 
-Observant l'histograma anterior, podem determinar que tenim principalment 4 motius majoritaris que porten a la gent a demanar un crèdit. Aquests són:
+Observant l'histograma anterior, podem determinar que tenim 4 motius majoritaris que porten a la gent a demanar un crèdit. Aquests són:
 
 1. Radio/TV
 2. Cotxe (ja sigui nou o de segona ma)
 3. Mobles
 4. Negocis
 
-```{r message= FALSE, warning=FALSE}
+A continuació ens focalitzarem en observar si per cada un d'aquests elements continuem tenint la mateixa distribució del valor del préstec com hem pogut veure anteriorment de forma més global, o cada un dels motius té una distribució particular.
 
+```{r message= FALSE, warning=FALSE}
+#Collecting topPurpose elements
+topPurposeNames <- c("car (new)", "car (used)", "business", "furniture", "radio/tv")
+topPurpose=subset(data, purpose %in% topPurposeNames)
+
+#'amount' histogram per each topPurpose element
+ggplot(topPurpose, aes(amount)) + geom_histogram(aes(color = amount), bins=20)+facet_wrap(~purpose)
+
+#Mean computation
+mean(topPurpose$amount)
 ```
+
+Un cop realitzada la segmentació pels motius principals, podem concloure que tot i que la densitat per a cada un dels casos no és exactament igual al gràfic global en termes de la quantitat del préstec, aquests s'hi assemblen bastant. A la vegada, també és fàcilment visible que el valor mitjà és pràcticament el mateix, al voltant dels 3500 DM.
+
 ## Primer arbre de decisió
 
+El primer pas a realitzar per tal de crear el nostre arbre de decisió serà la divisió del conjunt de dades entre el conjunt d'entrenament i el conjunt de test. El conjunt d'entrenament ens permetrà entrenar el nostre model, mentre que el conjunt de test, ens permetrà verificar el funcionament del model i avaluar la qualitat d'aquest.
+
+```{r message= FALSE, warning=FALSE}
+#Creating a seed
+set.seed(101)
+#Creating training indexes
+train_indexes <- sample(1000, 800)
+#Create training sample
+credit_train <- data[train_indexes, ]
+#Creating test sample
+credit_test  <- data[-train_indexes, ]
+```
+
+El factor que desitgem predir correspon al camp _'default'_ de les nostres dades, és per això que és necessari veure quina és la relació d'aquests valors a la mostra global, i si aquesta és més o menys similar també als conjunts d'entrenament i de test.
+
+```{r message= FALSE, warning=FALSE}
+#'default' global sample
+table(data$default)
+#'default' train sample distribution
+prop.table(table(credit_train$default))
+#'default' test sample distribution
+prop.table(table(credit_test$default))
+```
+
+Les particions obtingudes són bastant representatives en el camp _'default'_, ja que es mouen molt a prop al 70-30 (%) de la mostra global.
+
+A continuació carregarem la llibreria C50 i crearem el nostre model classificador basat en un arbre de decisió.
+Un pas previ que haurem de realitzar, és el de convertir a _factor_ el camp _'default'_, ja que és un requeriment d'entrada per a crear el model.
+
+```{r message= FALSE, warning=FALSE}
+#Load of C50 library
+library(C50)
+#'default' to a factor
+credit_train$default<-as.factor(credit_train$default)
+#Model creation
+model <- C50::C5.0(credit_train[-17], credit_train$default,rules = TRUE)
+#Summary of the model
+summary(model)
+```
+
+Mitjançant la funció _summary()_ podrem veure la informació detallada de l'arbre de decisió com podria el percentatge d'error a l'hora de classificar, la quantitat d'elements utilitzats per a realitzar l'entrenament, com s'han classificat, entre d'altres moltes dades. Un element molt rellevant que també podem observar són les regles de decisió dins el nostre arbre classificador.
+En aquest cas hi trobem 23 regles de decisió. Aquestes ens indiquen segons una combinació d'atributs d'entrada quin és el valor de sortida més probable que surti i amb quina probabilitat en un rang d'entre 0 i 1.
+També podem visualitzar de forma molt més gràfica l'arbre de decisió que hem obtingut. En el nostre cas, donada la gran quantitat d'atributs amb els quals estem treballant, és realment complicat d'interpretar, ja que la majoria de valors se superposen.
+
+```{r message= FALSE, warning=FALSE}
+#Plot the decision tree of the model
+model <- C50::C5.0(credit_train[-17], credit_train$default)
+plot(model)
+```
 
 ## Explicació de les regles obtingudes
 
+Les regles de decisió del model són les que ens permeten realitzar la classificació de les dades d'entrada. La llibreria _C50_ elabora un anàlisi dels valors d'entrenament i el valor a predir, i genera un model predicatiu de classificació per a futures dades d'entrada.
+Tal com hem dit anteriorment, el nombre de regles de decisió per aquest cas és d'un total de 23.
+L'algorisme, principalment les ha separat en si la sortida tendeix a ser 1 o si tendeix a ser 2.
+
+* __Predicció = 1__
+
+Disposem de 4 d'un total de 23 regles que fan referència amb una alta probabilitat que surti com a valor predit 1.
+
+Aquestes regles es focalitzen a una temporalitat del préstec a mitjà termini (2-4 anys), no molts diners estalviats o a vegades indefinits i amb un historial de crèdits gens favorable.
+Segons la interpretació de les regles podem deduir que la predicció fa referència al no retornament de préstec.
+
+* __Predicció = 2__
+
+Per altra banda, disposem de 19 regles que fan referència a que el valor predit sigui 2. 
+
+Les regles de decisió d'aquest cas principalment es focalitzen a historials de crèdit força favorables i majoritàriament amb una feina estable. Pel que fa als altres aspectes, tendeixen a ser variats com que disposem de moltes regles que fan referència aquest valor. Així i tot, un dels dos factors anteriorment comentats apareix gairebé sempre.
 
 ## Anàlisis de la bondat d'ajust sobre el conjunt de test i matriu de confusió
 
+Un factor transcendental en el camp dels models predictius és l'avaluació del rendiment i la qualitat del nostre model.
+
+A continuació realitzarem una prova al model amb les dades de test separades anteriorment.
+
+```{r message= FALSE, warning=FALSE}
+#Precision computation
+predicted_model <- predict(model, credit_test, type="class")
+print(sprintf("La precisión del árbol es: %.4f %%",100*sum(predicted_model == train_indexes) / length(predicted_model)))
+summary(predicted_model)
+```
+
+Després de realitzar la prova, podem veure que la precisió del model és d'un 50% d'efectivitat.
+Una altra forma molt útil per identificar i analitzar els errors comesos és la matriu de confusió. Aquesta ens indica el valor predit respecte al valor real. D'aquesta manera podem veure quantes vegades hem fallat de cada element i envers quin altre ho hem fet. Aquest procés ens porta a millor el nostre classificador per tal que sigui més precís.
+
+```{r message= FALSE, warning=FALSE}
+if(!require(gmodels)){
+  install.packages('gmodels', repos='http://cran.us.r-project.org')
+  library(gmodels)
+}
+CrossTable(credit_test$default, predicted_model,
+           prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE,
+           dnn = c('Reality', 'Predicted'))
+
+```
 
 ## Models complementaris
 
+En aquest apartat comprovarem si obtenim algun tipus de millor en el rendiment de l'efectivitat del nostre model aplicant el concepte del "adaptative boosting".
+
+```{r message= FALSE, warning=FALSE}
+#New model creation
+model2 <- C50::C5.0(credit_train[-17], credit_train$default, trials=10, rules = TRUE)
+#summary(model2)
+```
+
+
+```{r message= FALSE, warning=FALSE}
+#New model testing
+predicted_model2 <- predict(model2, credit_test, type="class")
+print(sprintf("La precisión del árbol es: %.4f %%",100*sum(predicted_model2 == train_indexes) / length(predicted_model2)))
+
+#New model confusion matrix
+CrossTable(credit_test$default, predicted_model2,
+           prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE,
+           dnn = c('Reality', 'Predicted'))
+```
+
+Després de realitzar la prova amb aquesta nova variant utilitzant la llibreria C5.0, veiem que els resultats en termes d'efectivitat són exactament els mateixos. 
 
 ## Conclusions obtingudes
+
+L'estudi realitzat ha sigut molt interessant en múltiples aspectes. Principalment la consolidació dels conceptes teòrics de l'assignatura respecte als models de classificació amb arbres de decisió. A la vegada, personalment observo que començo a agafar molt més pràctica en el llenguatge de programació R que era completament nou per a mi. També comentar que m'ha semblat molt interessant tractar amb aquest tipus de dades, ja que és un possible cas real amb el qual un futur ens hi podem trobar, però també he pogut observar que aquesta classe d'algorismes que hem utilitzat són molt poc eficients per casos on la quantitat d'atributs tendeix a ser gran, ja que la seva predicció és del tipus 'ruled based' i tal com ens hem trobat en aquest cas, la quantitat de regles creix molt ràpidament i tendeixen a ser poc concises tal com hem vist en l'anàlisi de la predicció 2.
 
 ******
 # Rúbrica
