@@ -37,3 +37,28 @@ for(i in c(1,2,3,4,5,6,7,8,9,10)){
   newMeanAtur <- mean(myDistrictesList[[i]]$PesAtur)
   meanByDistricteList[i] <- newMeanAtur
 }
+
+#KMEANS CLUSTERING
+
+if (!require(cluster)) install.packages(cluster);library(cluster)
+if(!require(MVA)) install.packages("MVA"); library(MVA)
+d <- daisy(numericData) 
+resultados <- rep(0, 10)
+for (i in c(2,3,4,5,6,7,8,9,10))
+{
+  fit           <- kmeans(numericData, i)
+  y_cluster     <- fit$cluster
+  sk            <- silhouette(y_cluster, d)
+  resultados[i] <- mean(sk[,3])
+}
+plot(2:10,resultados[2:10],type="o",col="blue",pch=0,xlab="Nº of clusters",ylab="Silhouette")
+
+if (!require(fpc)) install.packages(fpc);library(fpc)
+fit_ch  <- kmeansruns(numericData, krange = 1:10, criterion = "ch") 
+# fit_asw <- kmeansruns(numericData, krange = 1:10, criterion = "asw") 
+
+print(fit_asw$bestk)
+# print(fit_ch$bestk)
+
+cl2 <- kmeans(numericData, fit_ch$bestk)
+with(numericData, pairs(numericData, col=c(1:6)[cl2$cluster]))

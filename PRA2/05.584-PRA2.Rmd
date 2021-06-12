@@ -153,8 +153,14 @@ En tots els punts anteriors es demana a l'estudiant, a més d'aplicar els difere
   
 
 ******
-
+# Implementació 
 ******
+
+## Model no supervistat
+
+## Regles d’associació
+
+## Tècnica de boosting
 
 
 
