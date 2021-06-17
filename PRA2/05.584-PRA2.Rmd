@@ -156,7 +156,85 @@ En tots els punts anteriors es demana a l'estudiant, a més d'aplicar els difere
 # Implementació 
 ******
 
+## Càrrega de les dades i llibreries
+
+Carregem llibreries.
+
+```{r message= FALSE, warning=FALSE}
+#https://cran.r-project.org/web/packages/ggplot2/index.html
+if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
+# https://cran.r-project.org/web/packages/dplyr/index.html
+if (!require('dplyr')) install.packages('dplyr'); library('dplyr')
+if (!require(cluster)) install.packages(cluster);library(cluster)
+if(!require(MVA)) install.packages("MVA"); library(MVA)
+if(!require(tidyr)) install.packages("tidyr");library(tidyr)
+if(!require(cluster)) install.packages("cluster"); library(cluster)
+if(!require(plyr)) install.packages("plyr"); library(plyr)
+if(!require(readr)) install.packages("readr"); library(readr)
+```
+
+Carregem tots els arxius de dades en un únic DataFrame. 
+
+```{r message= FALSE, warning=FALSE}
+#IMPORT DATA - src: https://opendata-ajuntament.barcelona.cat/data/ca/dataset/est-atur-pes
+
+#List of all files - https://datascienceplus.com/how-to-import-multiple-csv-files-simultaneously-in-r-and-create-a-data-frame/
+mycsvfiles = list.files(pattern="*.csv", full.names=TRUE)
+mycsvfiles
+
+#DataFrame creation with all data from files list
+datafromcsv = ldply(mycsvfiles, read_csv)
+#Setting headers
+colnames(datafromcsv) <- c("Any", "Mes", "CodiDistricte", "NomDistricte", "CodiBarri", "NomBarri", "Poblacio", "PesAtur")
+
+#Filter by only numeric data
+numericData <- datafromcsv %>% select(is.numeric)
+#Number of rows
+numericRows = dim(numericData)[1]
+```
+
+```{r message= FALSE, warning=FALSE}
+
+```
+
 ## Model no supervistat
+
+Els models no supervisats són algorismes que apliquen regles d'agregació per tal d'intentar trobar una estructura dins d'un conjunt de dades no etiquetada. Un dels models més coneguts en la funció de detectar la semblança entre objectes d'un conjunt de dades és el mètode dels centroides, també conegut com a K-means. Aquest forma part de la família de models que es basen en mesures de similitud o distància dins l'espai d'observacions. El càlcul de la distància es realitza a través de la distància euclidiana. 
+
+Abans de realitzar la implementació d'aquest algorisme, comprovarem com es distribueixen els valors del atur en cada un dels barris al llarg del temps per tal de considerar si és una bona opció plantejar, que cada un dels barris té un comportament particular en la relació població activa - atur.
+
+```{r message= FALSE, out.width="125%", warning=FALSE}
+#List of name that we are going to use and filter by these fields
+barriPoblAturNames <- c("CodiBarri", "Poblacio", "PesAtur")
+barriPoblAtur <- select(numericData, barriPoblAturNames)
+
+#Point plot by using the relation poblation-unemployment
+pobAturPlot <- ggplot(barriPoblAtur, aes(Poblacio, PesAtur)) + geom_point(aes(color=CodiBarri))
+pobAturPlot
+```
+
+A través del plot anterior poden visualitzar que cada un dels barris tendeix a seguir una tendència particular que es veu reflectida en una col·lecció de punts verticals que descriu la fluctuació de l'atur per cada un d'aquests, juntament amb una variació molt lleugera en termes de població. És per això que té molt de sentit aplicar un model no supervisat sobre aquest conjunt de dades per tal poder confirmar aquest comportament i detectar els diferents conjunts d'elements semblants dins el nostre domini.
+
+Per tal de realitzar aquesta comprovació, utilitzarem el criteri __Calinski-Harabasz__ aplicat sobre el nostre conjunt de dades, que mitjançant l'execució de l'algorisme __kmeans__, podrem determinar el valor ___k___ òptim, que correspon al nombre de clústers d'elements semblants. 
+
+
+```{r message= FALSE, warning=FALSE}
+if(!require(fpc)) install.packages(fpc); library(fpc)
+
+#Calinski-Harabasz criterion computation
+fit_ch  <- kmeansruns(barriPoblAtur, krange = 1:73, criterion = "ch")
+print(fit_ch$bestk)
+```
+_Warning: Aquest valor és variable degut al fet que ens trobem executant l'algorisme kmeans que té un factor aleatori._
+
+Tot i el que hem matisat anteriorment, el valor que més s'ha repetit durant el llarg de les execucions és 73. Així doncs, podem determinar que el comportament de semblança es troba bastant lligat a la quantitat dels barris, és a dir, a cada un dels barris.
+
+
+```{r message= FALSE, warning=FALSE}
+#K-means Clustering
+
+```
+
 
 ## Regles d’associació
 

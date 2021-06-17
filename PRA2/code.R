@@ -1,9 +1,7 @@
 #https://cran.r-project.org/web/packages/ggplot2/index.html
 if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
-
 # https://cran.r-project.org/web/packages/dplyr/index.html
 if (!require('dplyr')) install.packages('dplyr'); library('dplyr')
-
 if (!require(cluster)) install.packages(cluster);library(cluster)
 if(!require(MVA)) install.packages("MVA"); library(MVA)
 if(!require(tidyr)) install.packages("tidyr");library(tidyr)
@@ -16,9 +14,9 @@ print("This is the PRA2")
 #IMPORT DATA
 #https://datascienceplus.com/how-to-import-multiple-csv-files-simultaneously-in-r-and-create-a-data-frame/
 mycsvfiles = list.files(pattern="*.csv", full.names=TRUE)
-mycsvfiles
+#mycsvfiles
 datafromcsv = ldply(mycsvfiles, read_csv)
-colnames(datafromcsv) <- c("Any", "Mes", "CodiDistricte", "NomDistricte", "CodiBarri", "NomBarri", "Poblacio16_64anys", "PesAtur")
+colnames(datafromcsv) <- c("Any", "Mes", "CodiDistricte", "NomDistricte", "CodiBarri", "NomBarri", "Poblacio", "PesAtur")
 
 #ONLY NUMERIC DATA
 numericData <- datafromcsv %>% select(is.numeric)
@@ -38,27 +36,59 @@ for(i in c(1,2,3,4,5,6,7,8,9,10)){
   meanByDistricteList[i] <- newMeanAtur
 }
 
-#KMEANS CLUSTERING
+#barriPoblAtur
 
+barriPoblAturNames <- c("CodiBarri", "Poblacio", "PesAtur")
+barriPoblAtur <- select(numericData, barriPoblAturNames)
+
+pobAturPlot <- ggplot(barriPoblAtur, aes(Poblacio, PesAtur)) + geom_point(aes(color=CodiBarri))
+pobAturPlot
+
+## KMEANS CLUSTERING ##
+
+# Average Silhouette Method
 if (!require(cluster)) install.packages(cluster);library(cluster)
 if(!require(MVA)) install.packages("MVA"); library(MVA)
-d <- daisy(numericData) 
-resultados <- rep(0, 10)
-for (i in c(2,3,4,5,6,7,8,9,10))
-{
-  fit           <- kmeans(numericData, i)
-  y_cluster     <- fit$cluster
-  sk            <- silhouette(y_cluster, d)
-  resultados[i] <- mean(sk[,3])
+
+# d <- daisy(barriPoblAtur)
+# resultados <- rep(0, 73)
+# for (i in c(2:73))
+# {
+#   fit           <- kmeans(barriPoblAtur, i)
+#   y_cluster     <- fit$cluster
+#   sk            <- silhouette(y_cluster, d)
+#   resultados[i] <- mean(sk[,3])
+# }
+# plot(2:73,resultados[2:73],type="o",col="blue",pch=0,xlab="Nº of clusters",ylab="Silhouette", label = max(resultados))
+
+#https://uc-r.github.io/kmeans_clustering#silo
+if(!require(tidyverse)) install.packages("tidyverse"); library(tidyverse)
+if(!require(factoextra)) install.packages("factoextra"); library(factoextra)
+# function to compute average silhouette for k clusters
+avg_sil <- function(k) {
+  km.res <- kmeans(barriPoblAtur, centers = k)
+  ss <- silhouette(km.res$cluster, dist(barriPoblAtur))
+  mean(ss[, 3])
 }
-plot(2:10,resultados[2:10],type="o",col="blue",pch=0,xlab="NÂº of clusters",ylab="Silhouette")
 
-if (!require(fpc)) install.packages(fpc);library(fpc)
-fit_ch  <- kmeansruns(numericData, krange = 1:10, criterion = "ch") 
-# fit_asw <- kmeansruns(numericData, krange = 1:10, criterion = "asw") 
+# Compute and plot wss for k = 2 to k = 73
+k.values <- 2:73
 
-print(fit_asw$bestk)
+# extract avg silhouette for 2-73 clusters
+avg_sil_values <- map_dbl(k.values, avg_sil)
+
+plot(k.values, avg_sil_values,
+     type = "b", pch = 19, frame = FALSE, 
+     xlab = "Number of clusters K",
+     ylab = "Average Silhouettes")
+abline(h = c(min, max))
+#abline(v=1:73)
+
+#Calinski-Harabasz
+# if (!require(fpc)) install.packages(fpc);library(fpc)
+# fit_ch  <- kmeansruns(barriPoblAtur, krange = 1:73, criterion = "ch")
 # print(fit_ch$bestk)
-
-cl2 <- kmeans(numericData, fit_ch$bestk)
-with(numericData, pairs(numericData, col=c(1:6)[cl2$cluster]))
+# cl2 <- kmeans(barriPoblAtur, fit_ch$bestk)
+# with(barriPoblAtur, pairs(barriPoblAtur, col=c(1:6)[cl2$cluster]))
+# plot(barriPoblAtur, col=cl2$cluster)
+# clusplot(barriPoblAtur, cl2$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
