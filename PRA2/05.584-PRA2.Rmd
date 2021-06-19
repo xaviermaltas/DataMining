@@ -213,9 +213,46 @@ pobAturPlot <- ggplot(barriPoblAtur, aes(Poblacio, PesAtur)) + geom_point(aes(co
 pobAturPlot
 ```
 
-A través del plot anterior poden visualitzar que cada un dels barris tendeix a seguir una tendència particular que es veu reflectida en una col·lecció de punts verticals que descriu la fluctuació de l'atur per cada un d'aquests, juntament amb una variació molt lleugera en termes de població. És per això que té molt de sentit aplicar un model no supervisat sobre aquest conjunt de dades per tal poder confirmar aquest comportament i detectar els diferents conjunts d'elements semblants dins el nostre domini.
+A través del plot anterior poden visualitzar que cada un dels barris tendeix a seguir una tendència particular que es veu reflectida en una col·lecció de punts verticals que descriu la fluctuació de l'atur per cada un d'aquests, juntament amb una variació molt lleugera en termes de població. És per això que té molt de sentit aplicar un model no supervisat sobre aquest conjunt de dades per tal poder confirmar aquest comportament i detectar els diferents conjunts d'elements semblants dins el nostre domini. Per tal de realitzar aquesta comprovació utilitzarem diferents tècniques i criteris.
 
-Per tal de realitzar aquesta comprovació, utilitzarem el criteri __Calinski-Harabasz__ aplicat sobre el nostre conjunt de dades, que mitjançant l'execució de l'algorisme __kmeans__, podrem determinar el valor ___k___ òptim, que correspon al nombre de clústers d'elements semblants. 
+
+
+### Average Silhouette Method
+
+```{r message= FALSE, warning=FALSE}
+#https://uc-r.github.io/kmeans_clustering#silo
+if(!require(tidyverse)) install.packages("tidyverse"); library(tidyverse)
+if(!require(factoextra)) install.packages("factoextra"); library(factoextra)
+
+# Function to compute average silhouette for k clusters
+avg_sil <- function(k) {
+  km.res <- kmeans(barriPoblAtur, centers = k)
+  ss <- silhouette(km.res$cluster, dist(barriPoblAtur))
+  mean(ss[, 3])
+}
+
+# Compute and plot wss for k = 2 to k = 73
+k.values <- 2:73
+
+# Extract avg silhouette for 2-73 clusters
+avg_sil_values <- map_dbl(k.values, avg_sil)
+
+plot(k.values, avg_sil_values,
+     type = "b", pch = 19, frame = FALSE,
+     xlab = "Number of clusters K",
+     ylab = "Average Silhouettes") +
+abline(h = max(avg_sil_values))
+
+#Print the max value
+print(max(avg_sil_values))
+#Print the index of the max value
+which.max(avg_sil_values)
+```
+
+### Elbow Method 
+
+### Calinski-Harabasz Index
+utilitzarem el criteri __Calinski-Harabasz__ aplicat sobre el nostre conjunt de dades, que mitjançant l'execució de l'algorisme __kmeans__, podrem determinar el valor ___k___ òptim, que correspon al nombre de clústers d'elements semblants. 
 
 
 ```{r message= FALSE, warning=FALSE}

@@ -46,7 +46,7 @@ pobAturPlot
 
 ## KMEANS CLUSTERING ##
 
-# Average Silhouette Method
+### Average Silhouette Method
 if (!require(cluster)) install.packages(cluster);library(cluster)
 if(!require(MVA)) install.packages("MVA"); library(MVA)
 
@@ -78,13 +78,30 @@ k.values <- 2:73
 avg_sil_values <- map_dbl(k.values, avg_sil)
 
 plot(k.values, avg_sil_values,
-     type = "b", pch = 19, frame = FALSE, 
+     type = "b", pch = 19, frame = FALSE,
      xlab = "Number of clusters K",
-     ylab = "Average Silhouettes")
-abline(h = c(min, max))
-#abline(v=1:73)
+     ylab = "Average Silhouettes") +
+abline(h = max(avg_sil_values))
+print(max(avg_sil_values))
+which.max(avg_sil_values)
 
-#Calinski-Harabasz
+### Elbow Method 
+# result <- rep(0, 73)
+# result2 <- rep(0, 73)
+# for (i in c(2:73))
+# {
+#   fit <- kmeans(barriPoblAtur, i)
+#   result[i] <- fit$tot.withinss
+#   result2[i] <- fit$betweenss
+# }
+# plot(2:73,result[2:73],type="o",col="blue",pch=0,xlab="Nombre de clústers",ylab="")
+# mtext("tot.withinss",side=2, line=3,col="blue")
+# par(new=TRUE)
+# plot(2:73,result2[2:73],type="o",axes=FALSE,col="green",xlab="",ylab="",)
+# axis(side=4)
+# mtext("betweenss",side=4, line=3,col="green")
+
+### Calinski-Harabasz
 # if (!require(fpc)) install.packages(fpc);library(fpc)
 # fit_ch  <- kmeansruns(barriPoblAtur, krange = 1:73, criterion = "ch")
 # print(fit_ch$bestk)
