@@ -150,6 +150,10 @@ En tots els punts anteriors es demana a l'estudiant, a més d'aplicar els difere
   + [Espai de recursos UOC per a ciència de dades](http://datascience.recursos.uoc.edu/es/)
   + [Cercador de codi R](https://rseek.org/)
   + [Col·lecció de cheatsheets en R](https://rstudio.com/resources/cheatsheets/)
+  + [Introducing Clustering II: Clustering Algorithms](https://gameanalytics.com/blog/introducing-clustering-ii-clustering-algorithms/)
+  + [Clustering Algorithms](https://developers.google.com/machine-learning/clustering/clustering-algorithms)
+  + [K-means Cluster Analysis](https://uc-r.github.io/kmeans_clustering#silo)
+  
   
 
 ******
@@ -199,9 +203,14 @@ numericRows = dim(numericData)[1]
 
 ## Model no supervistat
 
-Els models no supervisats són algorismes que apliquen regles d'agregació per tal d'intentar trobar una estructura dins d'un conjunt de dades no etiquetada. Un dels models més coneguts en la funció de detectar la semblança entre objectes d'un conjunt de dades és el mètode dels centroides, també conegut com a K-means. Aquest forma part de la família de models que es basen en mesures de similitud o distància dins l'espai d'observacions. El càlcul de la distància es realitza a través de la distància euclidiana. 
+Els models no supervisats són algorismes que apliquen regles d'agregació per tal d'intentar trobar una estructura dins d'un conjunt de dades no etiquetades. Un dels models més coneguts en la funció de detectar la semblança entre objectes d'un conjunt de dades és __k-means__. Aquest algorisme forma part de la família del ___Centroid-based clustering___ que agrupa elements a través del càlcul de distàncies entre els centres dels clústers. K-means és tan extensament utilitzat, ja que és molt eficient, efectiu i simple tot i ser bastant sensible a les condicions inicials i els outliers. Normalment el càlcul de distàncies s'efectua a través de la distància euclidiana.
 
-Abans de realitzar la implementació d'aquest algorisme, comprovarem com es distribueixen els valors del atur en cada un dels barris al llarg del temps per tal de considerar si és una bona opció plantejar, que cada un dels barris té un comportament particular en la relació població activa - atur.
+![Centroid-based clustering example](figures/centroidBased.jpg){#id .class width=75% height=75%}
+
+Inicialment treballarem amb aquest algorisme, però més endavant utilitzarem altres algorismes d'altres famílies per poder comparar resultats i obtenir una visió més amplia i global de les nostres dades per acabar realitzant un estudi més precís.
+
+
+Abans de realitzar la implementació d'aquest algorisme, comprovarem com es distribueixen els valors del atur en cada un dels barris al llarg del temps per tal de considerar si és una bona opció plantejar, que cada un dels barris té un comportament particular en la relació 'població activa - atur'.
 
 ```{r message= FALSE, out.width="125%", warning=FALSE}
 #List of name that we are going to use and filter by these fields
@@ -213,72 +222,241 @@ pobAturPlot <- ggplot(barriPoblAtur, aes(Poblacio, PesAtur)) + geom_point(aes(co
 pobAturPlot
 ```
 
-A través del plot anterior poden visualitzar que cada un dels barris tendeix a seguir una tendència particular que es veu reflectida en una col·lecció de punts verticals que descriu la fluctuació de l'atur per cada un d'aquests, juntament amb una variació molt lleugera en termes de població. És per això que té molt de sentit aplicar un model no supervisat sobre aquest conjunt de dades per tal poder confirmar aquest comportament i detectar els diferents conjunts d'elements semblants dins el nostre domini. Per tal de realitzar aquesta comprovació utilitzarem diferents tècniques i criteris.
-
+A través del plot anterior poden visualitzar que cada un dels barris tendeix a seguir una tendència particular que es veu reflectida en una col·lecció de punts verticals que descriu la fluctuació de l'atur per cada un d'aquests, juntament amb una variació molt lleugera en termes de població. És per això que té molt de sentit aplicar un model no supervisat sobre aquest conjunt de dades per tal de poder confirmar aquest comportament i detectar els diferents conjunts d'elements semblants dins el nostre domini. Per a realitzar aquesta comprovació utilitzarem diferents tècniques i criteris.
 
 
 ### Average Silhouette Method
 
-```{r message= FALSE, warning=FALSE}
-#https://uc-r.github.io/kmeans_clustering#silo
-if(!require(tidyverse)) install.packages("tidyverse"); library(tidyverse)
-if(!require(factoextra)) install.packages("factoextra"); library(factoextra)
+El primer mètode que utilitzarem per a aproximar el valor òptim corresponent al nombre de clústers pel nostre conjunt de dades és el de la ___silueta mitjana___. Aquest mètode determina que encertat és situar cada un dels objectes a un valor __k__ de clústers, calculant el valor mitjà per un conjunt de valors diferents __k__. Un valor mitjà alt de la silueta indica una bona agrupació, mentre que un valor baix indica el contrari.
+Inicialment aplicarem l'algorisme __kmeans__ amd diferents valors __k__. Amb els càlculs resultants obtindrem la silueta mitjana per cada valor __k__. Finalment observarem els resultats en format gràfic i seleccionarem el valor més alt. 
 
-# Function to compute average silhouette for k clusters
-avg_sil <- function(k) {
-  km.res <- kmeans(barriPoblAtur, centers = k)
-  ss <- silhouette(km.res$cluster, dist(barriPoblAtur))
-  mean(ss[, 3])
-}
-
+```{r message= FALSE, out.width="125%", warning=FALSE}
 # Compute and plot wss for k = 2 to k = 73
 k.values <- 2:73
 
 # Extract avg silhouette for 2-73 clusters
-avg_sil_values <- map_dbl(k.values, avg_sil)
+result <- rep(0,73)
+for( i in k.values ){
+  km.res <- kmeans(barriPoblAtur[1:3], centers = i)
+  sk <- silhouette(km.res$cluster, dist(barriPoblAtur[1:3]))
+  result[i]<-mean(sk[, 2])
+}
+#Print max value
+print(max(result))
+#Print the index of max value
+which.max(result)
 
-plot(k.values, avg_sil_values,
-     type = "b", pch = 19, frame = FALSE,
-     xlab = "Number of clusters K",
-     ylab = "Average Silhouettes") +
-abline(h = max(avg_sil_values))
+#Plot Average Silhouette
+plot(2:73, result[2:73],
+    type = "b", pch = 19, frame = FALSE,
+    main = "Average Silhouette Method",
+    xlab = "Number of clusters K",
+    ylab = "Average Silhouettes") +
+abline(h = max(result))
 
-#Print the max value
-print(max(avg_sil_values))
-#Print the index of the max value
-which.max(avg_sil_values)
+#Clusters distribution plot
+clusplot(barriPoblAtur[2:3], km.res$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
 ```
+_Warning: Aquest valor és variable degut al fet que ens trobem executant l'algorisme kmeans que té un factor aleatori._
 
-### Elbow Method 
+Els resultats obtinguts ens indiquen que el valor òptim __k__ correspon a 73, ja que és el valor més repetit al llarg de les execucions. Aquest valor confirma les nostres prediccions prèvies, tot i això aplicarem un segon mètode per poder comparar resultats.
 
 ### Calinski-Harabasz Index
-utilitzarem el criteri __Calinski-Harabasz__ aplicat sobre el nostre conjunt de dades, que mitjançant l'execució de l'algorisme __kmeans__, podrem determinar el valor ___k___ òptim, que correspon al nombre de clústers d'elements semblants. 
 
+El segon mètode que utilitzarem és el criteri __Calinski-Harabasz__. Aquest mètode igual que l'anterior, ens permet determinar el valor ___k___ òptim del nostre conjunt de dades mitjançant l'execució de l'algorisme __kmeans__.
 
-```{r message= FALSE, warning=FALSE}
+```{r message= FALSE, out.width="125%", warning=FALSE}
 if(!require(fpc)) install.packages(fpc); library(fpc)
 
 #Calinski-Harabasz criterion computation
 fit_ch  <- kmeansruns(barriPoblAtur, krange = 1:73, criterion = "ch")
+
+#Print best K value
 print(fit_ch$bestk)
+
+#Calinski-Harabasz plot
+plot(1:73, fit_ch$crit,
+     main = "Calinski-Harabasz Index",
+     type = "b", pch = 19, frame = FALSE,
+     xlab = "Number of clusters K",
+     ylab = "Average Silhouettes") + 
+abline(h = (fit_ch$bestk))
+
+#Clusters distribution plot
+plot(barriPoblAtur, col=fit_ch$cluster)
+clusplot(barriPoblAtur[2:3], fit_ch$cluster, color=TRUE, shade=TRUE,labels=2, lines=0)
 ```
+
 _Warning: Aquest valor és variable degut al fet que ens trobem executant l'algorisme kmeans que té un factor aleatori._
 
-Tot i el que hem matisat anteriorment, el valor que més s'ha repetit durant el llarg de les execucions és 73. Així doncs, podem determinar que el comportament de semblança es troba bastant lligat a la quantitat dels barris, és a dir, a cada un dels barris.
+Tot i el que hem matisat anteriorment, el valor que més s'ha repetit durant el llarg de les execucions és 73.
 
+Així doncs, donat que el resultat d'aquest criteri és molt similar a l'anterior, podem afirmar que amb l'ús de mètodes d'agregació no supervisats basats en el càlcul dels centroides, trobem que el nombre de clústers dins del nostre conjunt de dades es troba directament relacionat amb la quantitat de barris, és a dir, un clúster per a cada barri.
 
-```{r message= FALSE, warning=FALSE}
-#K-means Clustering
+### Average Silhouette Method - Different Metrics
+
+A continuació treballarem amb el mateix mètode de la silueta mitjana, pero canviarem la mètrica del càlcul de la distància de l'algorisme __k-means__. Per defecte aquest utilitza la distància euclidiana.
+
+![Euclidean Distance](figures/euclideanDistance.jpg){#id .class width=25% height=25%}
+
+#### Canberra Distance
+
+Utilitzant la llibreria __'amap'__ podem modificar la mesura de distància utilitzada dins del nostre algorisme __k-means__ entre dos punts. A continuació modificarem aquesta paràmetre i utilitzarem la 'Canberra Distance' definida de la següent manera:
+
+![Canberra Distance](figures/canberraDistance.jpg){#id .class width=50% height=50%}
+
+```{r message= FALSE, out.width="125%", warning=FALSE}
+#Loading library
+# https://www.rdocumentation.org/packages/amap/versions/0.8-18/topics/Kmeans
+# https://rdrr.io/cran/amap/man/dist.html
+if(!require(amap)) install.packages("amap"); library(amap)
+
+# Compute and plot wss for k = 2 to k = 73
+k.values <- 2:73
+result <- rep(0,73)
+# Extract avg silhouette for 2-73 clusters
+for( i in k.values ){
+  km.res <- Kmeans(barriPoblAtur[1:3], centers = i, method = "canberra")
+  sk <- silhouette(km.res$cluster, dist(barriPoblAtur[1:3]))
+  result[i]<-mean(sk[, 2])
+}
+#Print max value
+print(max(result))
+#Print the index of max value
+which.max(result)
+
+#Plot Average Silhouette - Canberra Distance
+plot(2:73, result[2:73],
+     type = "b", pch = 19, frame = FALSE,
+     main = "Average Silhouette Method - Canberra Distance",
+     xlab = "Number of clusters K",
+     ylab = "Average Silhouettes")
 
 ```
 
+_Warning: Aquest valor és variable degut al fet que ens trobem executant l'algorisme kmeans que té un factor aleatori._
+
+Els resultats obtinguts ens indiquen que tot i que haver modificat el mètode del càlcul de la distància, obtenim un resultat pràcticament igual. Així doncs, les conclusions extretes anteriorment queden reforçades.
+
+Per altra banda, una altra manera de comprovar la validesa de les conclusions extretes és aplicar mètodes i algorismes de clustering que formen part d'alguna altra família com pot ser el Mètode d'agrupaments jeràrquics.
 
 ## Regles d’associació
 
-## Tècnica de boosting
+Les regles d'associació són mètodes que ens permeten trobar i descobrir relacions/dependències entre variables dins un domini mitjançant una expressió lògica.
 
+A continuació comentarem un conjunt de regles d'associació que podem trobar dins el nostre data set i posteriorment les computarem per veure si les previsions prèvies tenien sentit o no.
+El nostre estudi de mineria de dades es troba enfocat en analitzar la relació que trobem entre la població laboralment activa de la ciutat de Barcelona i l'atur amb dades segmentades en districtes i barris. Així doncs podem plantejar que les zones més castigades per l'atur durant els últims anys són aquelles que disposen de menys recursos. Situant-nos sobre el mapa de la ciutat de Barcelona, els barris que tendeixen a reflectir aquestes característiques, són les zones més antigues i a la vegada, els barris que es troben als districtes més propers a la zona del Besòs.
 
+### Còmput de les regles d'associació
 
+Inicialment podem provar d'analitzar tot el conjunt de dades numèriques a veure quines són les regles generades i si aquestes ens aporten algun tipus d'informació.
 
+```{r message= FALSE, warning=FALSE}
+#Loading libraries
+if (!require('arules')) install.packages('arules'); library('arules')
 
+#Numeric raw data
+numericData_rules <- apriori(numericData, parameter = list(support = 0.01, confidence = 0.5))
+summary(numericData_rules)
+inspect(head(sort(numericData_rules, decreasing = TRUE, by = "confidence"), 10))
+```
 
+Observem que obtenim un total de 1475 regles, una xifra completament desorbitada. Així doncs, podem concloure que amb aquestes regles no podem extreure gens d'informació.
+
+A continuació farem un anàlisi de les regles filtrant les dades de població i atur per districte, i seguidament per barri.
+
+```{r message= FALSE, warning=FALSE}
+#Filtering data by Districte - distPoblAtur
+distPoblAturNames <- c("CodiDistricte", "Poblacio", "PesAtur")
+distPoblAtur <- select(numericData, distPoblAturNames)
+
+###pobAturDistricte
+PobAturDistricte_rules <- apriori(distPoblAtur, parameter = list(support = 0.01, confidence = 0.5))
+summary(PobAturDistricte_rules)
+inspect(PobAturDistricte_rules)
+```
+
+Els resultats que hem obtingut formen un conjunt de 18 regles, un nombre molt més reduït i molt més analitzable. Abans d'entrar en l'anàlisi de les regles, és necessari realitzar una taula per associar el districte amb el seu identificador, per poder realitzar una millor lectura de les dades. 
+
+Districtes (rang barris): 
+
+1. Ciutat Vella (1-4)
+2. Eixample (5-10)
+3. Sants - Montjuïc (11-18)
+4. Les Corts (19-21)
+5. Sarrià - Sant Gervasi (22-27)
+6. Gràcia (28-32)
+7. Horta - Guinardó (33-43)
+8. Nou Barris (44-56)
+9. Sant Andreu (57-63)
+10. Sant Martí (64-73)
+
+Dins el conjunt de regles, observem que certa part de les prediccions s'han complert. Les regles ens confirmen que les zones més castigades són les que es situen a la zona propera al Besòs amb un atur que se situa de forma mitjana entre el 10 i 22%. Per altra banda, les zones cèntriques i nord són les que tenen un atur mitjà molt més reduït entre el 3 i 7%. A continuació farem un anàlisi més focalitzat per barris.
+
+```{r message= FALSE, warning=FALSE}
+###pobAturBarri
+PobAturBarri_rules <- apriori(barriPoblAtur, parameter = list(support = 0.01, confidence = 0.5))
+summary(PobAturBarri_rules)
+inspect(PobAturBarri_rules)
+```
+
+El nombre de regles obtingudes és d'un total de 12. La lectura d'aquestes és pràcticament idèntica a l'obtinguda a la dels districtes. Els barris més castigats són els de la zona del Besòs, així també com els més poblats dins la ciutat de Barcelona.
+
+## Model predictiu
+
+En aquest apartat generarem un model predictiu basat en arbres de decisió per tal de predir nous valors d'entrada, i poder-los classificar seguint les regles del nostre conjunt de dades actual.
+Inicialment realitzarem la divisió del conjunt de dades entre el conjunt d’entrenament i el conjunt de test. El conjunt d’entrenament ens permetrà entrenar el nostre model, mentre que el conjunt de test, ens permetrà verificar el funcionament del model i avaluar la qualitat d’aquest.
+
+```{r message= FALSE, warning=FALSE}
+#Creating a seed
+set.seed(101)
+trainRows = numericRows * 0.1
+#Creating training indexes
+train_indexes <- sample(numericRows, trainRows)
+#Create training sample 
+atur_train <- barriPoblAtur[train_indexes, ]
+#Creating test sample
+atur_test  <- barriPoblAtur[-train_indexes, ]
+```
+
+En el conjunt de test ens hem quedat amb el 10% dels registres totals, mentre que la resta els farem servir de test. 
+
+```{r message= FALSE, warning=FALSE}
+#Load of C50 library
+if (!require(C50)) install.packages(C50);library(C50)
+#'default' to a factor
+atur_train$PesAtur<-as.factor(atur_train$PesAtur)
+#Model creation
+model <- C50::C5.0(atur_train[-3], atur_train$PesAtur,rules = TRUE)
+#Summary of the model
+summary(model)
+```
+
+Un cop hem executat el model, observem que la quantit de regles de classificació és molt gran. A continuació observarem com queda l'arbre de decisió.
+
+```{r message= FALSE, warning=FALSE}
+# #Plot the decision tree of the model
+model <- C50::C5.0(atur_train[-3], atur_train$PesAtur)
+plot(model)
+```
+
+Finalment realitzarem l'anàlisi sobre el conjunt de test i la matriu de confusió.
+
+```{r message= FALSE, warning=FALSE}
+#Precision computation
+predicted_model <- predict(model, atur_test, type="class")
+
+summary(predicted_model)
+
+if(!require(gmodels)){
+  install.packages('gmodels', repos='http://cran.us.r-project.org')
+  library(gmodels)
+}
+# Uncomment to see values
+# CrossTable(atur_test$PesAtur, predicted_model,
+#            prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE,
+#            dnn = c('Reality', 'Predicted')) 
+```
+
+Després de realitzar la prova, observem que el classificador generat té un 0% d'efectivitat. Aixó és degut a que la predicció que es proposa a realitzar és la de l'atur exacte a través d'un conjunt de regles i aixó el fa molt ineficient. 
+Previament he intentat realitzar proves per tal de veure quines eren les dimensions que em permetrien obtenir una millor predicció i aquestes són les que "millor" han sortit.
